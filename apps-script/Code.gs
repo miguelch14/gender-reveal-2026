@@ -9,6 +9,9 @@
  *   - Ejecutar como: Yo
  *   - Quién tiene acceso: Cualquier usuario
  * Copia la URL que termina en /exec en CONFIG.rsvpEndpoint del index.html.
+ *
+ * Antes, ejecuta una vez prepararHoja() para crear las pestañas Invitados,
+ * Respuestas y Resumen (ver README.md).
  */
 
 var SHEET_NAME = 'Respuestas';
@@ -17,6 +20,66 @@ var HEADERS = [
   'Asistentes', 'Restricciones', 'Comentario', 'Cupos', 'Veces actualizado'
 ];
 var MAX_SEATS = 10;
+
+var SITE_URL = 'https://miguelch14.github.io/gender-reveal-2026/';
+var GUESTS_SHEET = 'Invitados';
+var GUESTS_HEADERS = [
+  'h (id)', 'Nombres (saludo)', 'Cupos', 'Teléfono (51…)', 'Link', 'Estado', 'Confirmados', 'Alerta', 'WhatsApp'
+];
+var GUEST_ROWS = 80;
+
+// Menú en la hoja: Invitación → Preparar hoja
+function onOpen() {
+  SpreadsheetApp.getUi().createMenu('Invitación')
+    .addItem('Preparar hoja', 'prepararHoja')
+    .addToUi();
+}
+
+/**
+ * Crea las pestañas Respuestas, Invitados y Resumen con sus fórmulas.
+ * Se puede ejecutar más de una vez: no borra los invitados que ya escribiste.
+ */
+function prepararHoja() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  getSheet_();
+
+  var g = ss.getSheetByName(GUESTS_SHEET) || ss.insertSheet(GUESTS_SHEET, 0);
+  g.getRange(1, 1, 1, GUESTS_HEADERS.length).setValues([GUESTS_HEADERS]).setFontWeight('bold');
+  g.setFrozenRows(1);
+  g.getRange('A:A').setNumberFormat('@');   // ids como texto: 007 no se vuelve 7
+  g.getRange('D:D').setNumberFormat('@');
+  if (!g.getRange('A2').getValue()) g.getRange('A2:D2').setValues([['007', 'Yembert y Laura', 2, '']]);
+
+  var formulas = [];
+  for (var r = 2; r <= GUEST_ROWS + 1; r++) {
+    var resp = 'VLOOKUP($A' + r + ',Respuestas!$B:$E,';
+    formulas.push([
+      '=IF($A' + r + '="","","' + SITE_URL + '?h="&ENCODEURL($A' + r + ')&"&n="&ENCODEURL($B' + r + ')&"&c="&$C' + r + ')',
+      '=IF($A' + r + '="","",IFERROR(IF(' + resp + '3,FALSE)="si","✅ Asiste","❌ No asiste"),"⏳ Pendiente"))',
+      '=IF($A' + r + '="","",IFERROR(IF(' + resp + '3,FALSE)="si",' + resp + '4,FALSE),0),""))',
+      '=IF(AND(ISNUMBER($G' + r + '),$G' + r + '>$C' + r + '),"⚠️ Más que los cupos","")',
+      '=IF(OR($A' + r + '="",$D' + r + '=""),"",HYPERLINK("https://wa.me/"&$D' + r +
+        '&"?text="&ENCODEURL("¡Hola, "&$B' + r + '&"! Con mucho cariño te enviamos la invitación a nuestro gender reveal: "&$E' + r + '),"Enviar"))'
+    ]);
+  }
+  g.getRange(2, 5, GUEST_ROWS, 5).setFormulas(formulas);
+  g.setColumnWidth(2, 200);
+  g.setColumnWidth(5, 320);
+  g.setColumnWidth(6, 120);
+
+  var s = ss.getSheetByName('Resumen') || ss.insertSheet('Resumen');
+  s.getRange('A1:B6').setValues([
+    ['Hogares invitados', '=COUNTA(Invitados!A2:A)'],
+    ['Cupos entregados', '=SUM(Invitados!C2:C)'],
+    ['Hogares que asisten', '=COUNTIF(Invitados!F2:F,"✅ Asiste")'],
+    ['Personas confirmadas', '=SUM(Invitados!G2:G)'],
+    ['Hogares que no asisten', '=COUNTIF(Invitados!F2:F,"❌ No asiste")'],
+    ['Hogares pendientes', '=COUNTIF(Invitados!F2:F,"⏳ Pendiente")']
+  ]);
+  s.getRange('A1:A6').setFontWeight('bold');
+  s.setColumnWidth(1, 200);
+  ss.setActiveSheet(g);
+}
 
 function doPost(e) {
   var lock = LockService.getScriptLock();
