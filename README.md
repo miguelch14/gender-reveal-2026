@@ -1,4 +1,4 @@
-# Gender reveal · Miguel & Anaís
+# Gender reveal · Miguel & Anais
 
 Invitación web genérica: todos reciben el mismo link y cada persona se registra a sí misma
 y a sus acompañantes. Las confirmaciones llegan solas a una Google Sheet.
@@ -9,7 +9,7 @@ y a sus acompañantes. Las confirmaciones llegan solas a una Google Sheet.
 ## Cómo funciona
 1. El invitado abre el link, elige "Sí, asistiremos" o "No podremos asistir".
 2. Si asiste: cuántas personas (máx. 8 por registro, `CONFIG.maxPeople`), nombre y apellido de
-   cada una, celular opcional, restricción alimentaria y comentario.
+   cada una, restricción alimentaria y comentario (opcionales).
 3. La respuesta se guarda en la pestaña **Respuestas**. El celular del invitado recuerda su
    registro: si vuelve a abrir el link, ve "Cambiar respuesta" y su fila se actualiza (no se duplica).
 4. La pestaña **Resumen** muestra registros, personas confirmadas, aforo y lugares disponibles.

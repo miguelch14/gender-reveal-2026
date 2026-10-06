@@ -3,7 +3,7 @@
  */
 
 /**
- * Backend de confirmaciones del gender reveal de Miguel & Anaís.
+ * Backend de confirmaciones del gender reveal de Miguel & Anais.
  *
  * Invitación genérica: cualquiera con el link se registra a sí mismo y a sus acompañantes.
  * Cada registro trae un id aleatorio generado en el celular del invitado; si vuelve a

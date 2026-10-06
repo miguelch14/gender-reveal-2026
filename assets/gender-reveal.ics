@@ -9,7 +9,7 @@ DTSTAMP:20261006T000000Z
 SEQUENCE:1
 DTSTART:20261107T170000Z
 DTEND:20261107T220000Z
-SUMMARY:Gender Reveal de Miguel y Anaís
+SUMMARY:Gender Reveal de Miguel y Anais
 LOCATION:Fundo Querencia Alta\, Pachacámac\, Lima
 DESCRIPTION:Ven a descubrir con nosotros si nuestro bebé es niño o niña.
   Almuerzo incluido.\n\nDress code: libre\, en tonos blanco\, beige y marr
@@ -19,12 +19,12 @@ URL:https://miguelch14.github.io/gender-reveal-2026/
 BEGIN:VALARM
 ACTION:DISPLAY
 TRIGGER:-P1D
-DESCRIPTION:Mañana es el gender reveal de Miguel y Anaís
+DESCRIPTION:Mañana es el gender reveal de Miguel y Anais
 END:VALARM
 BEGIN:VALARM
 ACTION:DISPLAY
 TRIGGER:-PT3H
-DESCRIPTION:Hoy es el gender reveal de Miguel y Anaís
+DESCRIPTION:Hoy es el gender reveal de Miguel y Anais
 END:VALARM
 END:VEVENT
 END:VCALENDAR
