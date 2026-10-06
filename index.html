@@ -136,6 +136,27 @@ body.locked { overflow: hidden; height: 100%; }
 .hello { margin: 0 0 -12px; max-width: 320px; font-size: 26px; font-style: italic; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
 .seats { margin: 0; font-size: 12px; letter-spacing: .2em; font-weight: 500; color: var(--soft); text-transform: uppercase; }
 
+/* ---------- Historia (fotos con aparición y parallax suave; el scroll nunca se bloquea) ---------- */
+.story { width: 100%; display: flex; flex-direction: column; gap: 52px; }
+.story-head { text-align: center; margin-bottom: -28px; }
+.chapter { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+.frame {
+  position: relative; width: 100%; overflow: hidden; border-radius: 20px; border: 1px solid var(--accent);
+  background: var(--env); box-shadow: 0 14px 34px rgba(90,67,50,.18);
+  opacity: 0; transform: translateY(28px) scale(.95);
+  transition: opacity 1s ease, transform 1.2s cubic-bezier(.2,.7,.2,1);
+}
+.frame.land { aspect-ratio: 4 / 3; }
+.frame.port { aspect-ratio: 3 / 4; }
+.frame img {
+  position: absolute; left: 0; top: -6%; width: 100%; height: 112%; max-width: none;
+  object-fit: cover; will-change: transform;
+}
+.chapter-text { opacity: 0; transform: translateY(16px); transition: opacity .9s ease .25s, transform .9s cubic-bezier(.2,.7,.2,1) .25s; }
+.chapter-text .label { display: block; margin-bottom: 8px; }
+.chapter-line { margin: 0 auto; max-width: 320px; font-size: 27px; font-style: italic; font-weight: 500; line-height: 1.25; }
+.chapter.in .frame, .chapter.in .chapter-text { opacity: 1; transform: none; }
+
 .count { width: 100%; text-align: center; }
 .count .label { display: block; margin-bottom: 14px; }
 .count-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
@@ -286,6 +307,43 @@ body.modal-open { overflow: hidden; }
       <p class="hello serif" id="hello" hidden></p>
       <p class="lead">te invitamos a descubrir con nosotros el sexo de nuestro bebé</p>
       <p class="seats" id="seats" hidden></p>
+    </section>
+
+    <section class="story" aria-label="Nuestra historia">
+      <div class="story-head"><span class="label">NUESTRA HISTORIA</span></div>
+      <figure class="chapter" style="margin:0">
+        <div class="frame land">
+          <img src="assets/img/puno-800.webp" srcset="assets/img/puno-800.webp 800w, assets/img/puno-1400.webp 1400w"
+               sizes="(max-width: 460px) calc(100vw - 40px), 420px" width="1400" height="1050" decoding="async"
+               alt="Miguel y Anaís sonriendo frente al lago Titicaca, en Puno">
+        </div>
+        <figcaption class="chapter-text">
+          <span class="label">PUNO</span>
+          <p class="chapter-line serif">Aquí nos enteramos de que seríamos papás</p>
+        </figcaption>
+      </figure>
+      <figure class="chapter" style="margin:0">
+        <div class="frame port">
+          <img src="assets/img/ambos-800.webp" srcset="assets/img/ambos-800.webp 800w, assets/img/ambos-1400.webp 1400w"
+               sizes="(max-width: 460px) calc(100vw - 40px), 420px" width="1400" height="1867" loading="lazy" decoding="async"
+               alt="Miguel y Anaís sentados juntos, abrazados">
+        </div>
+        <figcaption class="chapter-text">
+          <span class="label">HOY</span>
+          <p class="chapter-line serif">Contando los días para conocerte</p>
+        </figcaption>
+      </figure>
+      <figure class="chapter" style="margin:0">
+        <div class="frame port">
+          <img src="assets/img/bici-800.webp" srcset="assets/img/bici-800.webp 800w, assets/img/bici-1400.webp 1400w"
+               sizes="(max-width: 460px) calc(100vw - 40px), 420px" width="1400" height="1867" loading="lazy" decoding="async"
+               alt="Miguel y Anaís de ciclistas frente a los cerros, con una bicicleta de bebé entre los dos">
+        </div>
+        <figcaption class="chapter-text">
+          <span class="label">MUY PRONTO</span>
+          <p class="chapter-line serif">Seremos tres en cada ruta</p>
+        </figcaption>
+      </figure>
     </section>
 
     <section class="count rise" aria-live="off">
@@ -439,7 +497,42 @@ var CONFIG = {
       document.body.classList.remove('locked');
       invite.classList.add('show');
       window.scrollTo(0, 0);
+      startStory();
     }, reduce ? 200 : 2100);
+  }
+
+  // Historia: cada foto aparece al llegar a ella y se desplaza un poco más lento que la página.
+  function startStory() {
+    var chapters = [].slice.call(document.querySelectorAll('.chapter'));
+    var imgs = chapters.map(function (c) { return c.querySelector('.frame img'); });
+    function showAll() { chapters.forEach(function (c) { c.classList.add('in'); }); }
+    if (reduce) return showAll();
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { rootMargin: '0px 0px -10% 0px', threshold: 0.15 });
+      chapters.forEach(function (c) { io.observe(c); });
+    } else {
+      showAll();
+    }
+    var ticking = false;
+    function parallax() {
+      ticking = false;
+      var vh = window.innerHeight;
+      for (var i = 0; i < imgs.length; i++) {
+        var r = imgs[i].parentNode.getBoundingClientRect();
+        if (r.bottom < -100 || r.top > vh + 100) continue;
+        var p = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
+        p = Math.max(-1, Math.min(1, p));
+        imgs[i].style.transform = 'translate3d(0,' + (-p * r.height * 0.06).toFixed(1) + 'px,0)';
+      }
+    }
+    function onScroll() { if (!ticking) { ticking = true; window.requestAnimationFrame(parallax); } }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    parallax();
   }
   document.getElementById('open').addEventListener('click', openInvite);
 

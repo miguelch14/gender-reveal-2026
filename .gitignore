@@ -1,0 +1,3 @@
+# Fotos originales (pesadas y con EXIF/GPS): solo se publican las versiones de assets/img/
+fotos/
+.DS_Store
