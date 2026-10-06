@@ -252,6 +252,21 @@ body .stage.open > .stage-hint { opacity: 0; animation: none; }
 .foot { text-align: center; font-size: 28px; font-style: italic; font-weight: 500; }
 .foot small { display: block; margin-bottom: 6px; font-family: 'Jost', sans-serif; font-style: normal; font-size: 12px; letter-spacing: .3em; font-weight: 500; color: var(--soft); }
 
+/* Botón flotante de música: aparece al abrir el sobre. */
+.music {
+  position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 15;
+  width: 50px; height: 50px; border-radius: 50%; border: 0; padding: 0;
+  background: var(--ink); color: var(--cream); box-shadow: 0 6px 18px rgba(90,67,50,.35);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  opacity: 0; transform: scale(.6); pointer-events: none; transition: opacity .5s ease, transform .5s cubic-bezier(.3,1.4,.5,1);
+}
+.music.show { opacity: 1; transform: none; pointer-events: auto; }
+.music:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.music svg { width: 24px; height: 24px; }
+.music .off { display: none; }
+.music[aria-pressed="false"] .on { display: none; }
+.music[aria-pressed="false"] .off { display: block; }
+
 button.btn { width: 100%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 /* Evita el zoom por doble toque en botones (p. ej. tocar + varias veces). */
 button, a.btn { touch-action: manipulation; }
@@ -492,6 +507,17 @@ body.modal-open { overflow: hidden; }
   </div>
 </main>
 
+<!-- Música -->
+<audio id="bg-music" src="assets/audio/musica.m4a" preload="none" playsinline></audio>
+<button class="music" id="music-btn" type="button" aria-pressed="true" aria-label="Silenciar música">
+  <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/>
+  </svg>
+  <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>
+  </svg>
+</button>
+
 <!-- Formulario de confirmación -->
 <div class="modal" id="rsvp-modal" role="dialog" aria-modal="true" aria-labelledby="rsvp-title">
   <div class="sheet">
@@ -573,6 +599,7 @@ var CONFIG = {
   function openInvite() {
     if (opened) return;
     opened = true;
+    startMusic();   // dentro del toque: iOS y Android solo permiten audio tras un gesto
     stage.classList.add('open');
     setTimeout(function () {
       stage.classList.add('gone');
@@ -582,6 +609,82 @@ var CONFIG = {
       startStory();
     }, reduce ? 200 : 2100);
   }
+
+  // Música: empieza al abrir el sobre con entrada suave, volumen bajo y botón para silenciar.
+  // En iOS el volumen de <audio> no se puede cambiar por código: se usa Web Audio (GainNode) si existe.
+  var MUSIC_KEY = 'gender-reveal-music-off';
+  var MUSIC_VOL = 0.45;
+  var music = document.getElementById('bg-music');
+  var musicBtn = document.getElementById('music-btn');
+  var musicOff = false, gain = null, actx = null, fadeTimer = null;
+  try { musicOff = window.localStorage.getItem(MUSIC_KEY) === '1'; } catch (e) {}
+  function setVol(v, secs) {
+    if (gain) {
+      var t = actx.currentTime;
+      gain.gain.cancelScheduledValues(t);
+      gain.gain.setValueAtTime(gain.gain.value, t);
+      gain.gain.linearRampToValueAtTime(v, t + (secs || 0.01));
+      return;
+    }
+    clearInterval(fadeTimer);
+    var from = music.volume, steps = Math.max(1, Math.round((secs || 0) * 20)), i = 0;
+    fadeTimer = setInterval(function () {
+      i++;
+      try { music.volume = Math.max(0, Math.min(1, from + (v - from) * i / steps)); } catch (e) {}
+      if (i >= steps) clearInterval(fadeTimer);
+    }, 50);
+  }
+  function playMusic() {
+    if (actx && actx.state === 'suspended') actx.resume();
+    var p = music.play();
+    if (p && p.catch) p.catch(function () {});
+    setVol(MUSIC_VOL, 3);
+  }
+  function startMusic() {
+    if (!window.AudioContext && !window.webkitAudioContext) {
+      try { music.volume = 0; } catch (e) {}
+    } else {
+      try {
+        actx = new (window.AudioContext || window.webkitAudioContext)();
+        gain = actx.createGain();
+        gain.gain.value = 0;
+        actx.createMediaElementSource(music).connect(gain);
+        gain.connect(actx.destination);
+      } catch (e) { gain = null; actx = null; }
+    }
+    musicBtn.classList.add('show');
+    updateMusicBtn();
+    if (!musicOff) playMusic();
+  }
+  function updateMusicBtn() {
+    musicBtn.setAttribute('aria-pressed', musicOff ? 'false' : 'true');
+    musicBtn.setAttribute('aria-label', musicOff ? 'Activar música' : 'Silenciar música');
+  }
+  musicBtn.addEventListener('click', function () {
+    musicOff = !musicOff;
+    try { window.localStorage.setItem(MUSIC_KEY, musicOff ? '1' : '0'); } catch (e) {}
+    updateMusicBtn();
+    if (musicOff) { setVol(0, 0.4); setTimeout(function () { if (musicOff) music.pause(); }, 450); }
+    else playMusic();
+  });
+  // Bucle con fundido: baja los últimos 2,5 s y vuelve a entrar suave desde el inicio.
+  var fadingOut = false;
+  music.addEventListener('timeupdate', function () {
+    if (!musicOff && !fadingOut && music.duration && music.duration - music.currentTime < 2.5) {
+      fadingOut = true;
+      setVol(0, 2.4);
+    }
+  });
+  music.addEventListener('ended', function () {
+    fadingOut = false;
+    music.currentTime = 0;
+    if (!musicOff) playMusic();
+  });
+  // Si salen de la página (Maps, calendario, bloquean el celular) se pausa; al volver sigue.
+  document.addEventListener('visibilitychange', function () {
+    if (!opened || musicOff) return;
+    if (document.hidden) music.pause(); else playMusic();
+  });
 
   // Historia: cada foto aparece al llegar a ella y se desplaza un poco más lento que la página.
   function startStory() {
