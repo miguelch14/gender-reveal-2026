@@ -93,20 +93,50 @@ function prepararHoja() {
  * Ids difíciles de adivinar: nadie puede cambiar la respuesta de otro hogar probando 001, 002…
  */
 function generarIds() {
-  var g = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(GUESTS_SHEET);
-  if (!g || g.getLastRow() < 2) return;
-  var range = g.getRange(2, 1, g.getLastRow() - 1, 2);
-  var vals = range.getValues();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var g = ss.getSheetByName(GUESTS_SHEET);
+  if (!g) {
+    ss.toast('No existe la pestaña "Invitados". Usa primero Invitación → Preparar hoja.', 'Invitación', 8);
+    return;
+  }
+  var n = fillIds_(g, 2, Math.max(g.getLastRow() - 1, 0));
+  ss.toast(n ? 'Se generaron ' + n + (n === 1 ? ' id.' : ' ids.')
+             : 'No hay hogares sin id. Escribe el nombre en la columna B, debajo del encabezado.', 'Invitación', 8);
+}
+
+// Al escribir un nombre en Invitados (columna B), el id se genera solo.
+function onEdit(e) {
+  if (!e || !e.range) return;
+  var sh = e.range.getSheet();
+  if (sh.getName() !== GUESTS_SHEET || e.range.getColumn() > 2 || e.range.getLastColumn() < 2) return;
+  var first = Math.max(e.range.getRow(), 2);
+  var count = e.range.getLastRow() - first + 1;
+  if (count > 0) fillIds_(sh, first, count);
+}
+
+// Rellena ids vacíos en filas con nombre; devuelve cuántos generó.
+function fillIds_(g, firstRow, count) {
+  if (count < 1) return 0;
+  var last = g.getLastRow();
   var used = {};
-  vals.forEach(function (v) { if (v[0]) used[String(v[0])] = true; });
+  if (last >= 2) {
+    g.getRange(2, 1, last - 1, 1).getValues().forEach(function (v) {
+      var id = String(v[0]).trim();
+      if (id) used[id] = true;
+    });
+  }
+  var vals = g.getRange(firstRow, 1, count, 2).getValues();
+  var made = 0;
   for (var i = 0; i < vals.length; i++) {
-    if (vals[i][1] && !vals[i][0]) {
+    if (String(vals[i][1]).trim() && !String(vals[i][0]).trim()) {
       var id;
       do { id = randomId_(); } while (used[id]);
       used[id] = true;
-      g.getRange(i + 2, 1).setValue(id);
+      g.getRange(firstRow + i, 1).setValue(id);
+      made++;
     }
   }
+  return made;
 }
 
 function randomId_() {

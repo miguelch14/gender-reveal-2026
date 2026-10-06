@@ -44,8 +44,8 @@ En la pestaña **Invitados**, una fila por hogar:
 Las columnas **Link**, **Estado**, **Confirmados**, **Alerta** y **WhatsApp** se llenan solas
 (hasta 80 hogares). "Enviar" abre WhatsApp con el mensaje y el link listos.
 
-- Deja `h` vacío y usa el menú **Invitación → Generar ids faltantes**: pone un id aleatorio
-  (ej. `k7p2qx`) a cada hogar. No uses 001, 002…: serían fáciles de adivinar y alguien podría
+- Deja `h` vacío: al escribir el nombre se genera solo un id aleatorio (ej. `k7p2qx`).
+  Si pegas varias filas de golpe, usa el menú **Invitación → Generar ids faltantes**. No uses 001, 002…: serían fáciles de adivinar y alguien podría
   cambiar la respuesta de otro hogar. Una vez enviado un link, no cambies su id.
 - `Nombres` es el saludo ("Hola, Juan y María") y prellena los nombres de pila del formulario.
 - Los **cupos se validan en el servidor** con lo que dice esta hoja; editar `c=` en el link no sirve de nada.
