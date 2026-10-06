@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Gender Reveal · Miguel &amp; Anaís</title>
+<meta property="og:title" content="Boy or girl? · Miguel &amp; Anaís">
+<meta property="og:description" content="Te invitamos a descubrir con nosotros el sexo de nuestro bebé. Sábado 7 de noviembre, 1:00 p. m.">
+<meta property="og:type" content="website">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ground: #EADFCF;
+  --paper: #FFFFFF;
+  --ink: #5A4332;
+  --soft: #7A6451;
+  --accent: #B49A7E;
+  --env: #D8C6AB;
+  --env-dark: #C9B493;
+  --cream: #F7F1E7;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #EADFCF; --paper: #FFFFFF; --ink: #5A4332; --soft: #7A6451;
+    --accent: #B49A7E; --env: #D8C6AB; --env-dark: #C9B493; --cream: #F7F1E7;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #EADFCF; --paper: #FFFFFF; --ink: #5A4332; --soft: #7A6451;
+  --accent: #B49A7E; --env: #D8C6AB; --env-dark: #C9B493; --cream: #F7F1E7;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: 'Jost', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+}
+body.locked { overflow: hidden; height: 100%; }
+.serif { font-family: 'Cormorant Garamond', Georgia, serif; }
+
+/* ---------- Sobre ---------- */
+.stage {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--ground);
+  z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 40px; text-align: center;
+  transition: opacity .7s ease, visibility .7s ease;
+}
+.stage.gone { opacity: 0; visibility: hidden; }
+.stage-title { margin: 0; font-style: italic; font-weight: 500; font-size: 38px; line-height: 1.1; padding: 0 24px; }
+.stage-hello { margin: 0 0 10px; padding: 0 24px; font-size: 18px; font-weight: 400; line-height: 1.4; color: var(--soft); overflow-wrap: anywhere; }
+.stage-sub { font-size: 12px; letter-spacing: .34em; font-weight: 500; color: var(--soft); }
+.stage-hint { font-size: 13px; letter-spacing: .26em; font-weight: 500; color: var(--soft); animation: hint 2.2s ease-in-out infinite; transition: opacity .3s; }
+.stage.open .stage-hint { opacity: 0; animation: none; }
+@keyframes hint { 0%,100% { opacity: .45 } 50% { opacity: 1 } }
+/* Celular en horizontal o pantallas bajas: que el sobre entre completo. */
+@media (max-height: 560px) {
+  .stage { gap: 16px; }
+  .stage-title { font-size: 28px; }
+  .env { width: min(86vw, 380px, 82vh); }
+}
+
+.env-btn { background: none; border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.env-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 10px; border-radius: 6px; }
+.env { position: relative; width: min(86vw, 380px); aspect-ratio: 3 / 2; }
+.env-back { position: absolute; inset: 0; background: var(--env-dark); border-radius: 6px; z-index: 1; box-shadow: 0 18px 40px rgba(90,67,50,.22); }
+.letter {
+  position: absolute; left: 5%; right: 5%; top: 6%; height: 88%;
+  background: var(--paper); border: 1px solid var(--accent); border-radius: 4px;
+  z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  transition: transform 1s cubic-bezier(.4,.1,.2,1) .5s;
+}
+.letter-a { font-size: 10px; letter-spacing: .32em; font-weight: 500; color: var(--soft); }
+.letter-b { font-size: 26px; font-style: italic; font-weight: 500; line-height: 1; }
+.env-front {
+  position: absolute; inset: 0; z-index: 3; background: var(--env); border-radius: 6px;
+  clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%);
+}
+.env-flap {
+  position: absolute; left: 0; top: 0; width: 100%; height: 58%; z-index: 5;
+  background: var(--env); transform-origin: 50% 0;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transition: transform .8s cubic-bezier(.5,0,.2,1), z-index 0s linear .4s;
+}
+.seal {
+  position: absolute; left: 50%; top: 52%; width: 64px; height: 64px; margin: -32px 0 0 -32px; z-index: 6;
+  border-radius: 50%; background: var(--ink); color: var(--cream);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 0 0 3px var(--ink), inset 0 0 0 4.5px rgba(247,241,231,.45), 0 4px 10px rgba(90,67,50,.35);
+  font-size: 22px; font-style: italic; font-weight: 500;
+  transition: opacity .35s ease, transform .35s ease;
+  animation: pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { transform: scale(1) } 50% { transform: scale(1.07) } }
+.stage.open .env-flap { transform: rotateX(180deg); z-index: 1; }
+.stage.open .seal { opacity: 0; transform: scale(.6); animation: none; }
+.stage.open .letter { transform: translateY(-62%); }
+
+/* ---------- Invitación ---------- */
+.invite { visibility: hidden; opacity: 0; transition: opacity .8s ease .1s; }
+.invite.show { visibility: visible; opacity: 1; }
+.wrap { max-width: 460px; margin: 0 auto; padding: 36px 20px 56px; display: flex; flex-direction: column; align-items: center; gap: 28px; }
+.invite.show .rise { animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+.invite.show .rise:nth-child(2) { animation-delay: .15s; }
+.invite.show .rise:nth-child(3) { animation-delay: .3s; }
+.invite.show .rise:nth-child(4) { animation-delay: .45s; }
+.invite.show .rise:nth-child(5) { animation-delay: .6s; }
+@keyframes rise { from { opacity: 0; transform: translateY(18px) } to { opacity: 1; transform: none } }
+
+.arch {
+  width: 100%; background: var(--paper); border: 1.5px solid var(--accent);
+  border-radius: 230px 230px 0 0; padding: 84px 24px 44px;
+  display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center;
+}
+.label { font-size: 12px; letter-spacing: .34em; font-weight: 500; color: var(--soft); }
+.big { margin: 0; font-style: italic; font-weight: 500; font-size: clamp(48px, 15vw, 66px); line-height: 1; }
+.names { font-size: 36px; font-weight: 500; line-height: 1.1; }
+.lead { margin: 0; max-width: 300px; font-size: 16px; font-weight: 300; line-height: 1.65; color: var(--soft); }
+.hello { margin: 0 0 -12px; max-width: 320px; font-size: 26px; font-style: italic; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+.seats { margin: 0; font-size: 12px; letter-spacing: .2em; font-weight: 500; color: var(--soft); text-transform: uppercase; }
+
+.count { width: 100%; text-align: center; }
+.count .label { display: block; margin-bottom: 14px; }
+.count-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.count-box { background: var(--paper); border: 1px solid var(--accent); border-radius: 14px; padding: 14px 4px 10px; }
+.count-num { font-size: 40px; line-height: 1; font-weight: 500; }
+.count-lbl { margin-top: 6px; font-size: 11px; letter-spacing: .2em; font-weight: 500; color: var(--soft); }
+.count-done { font-size: 34px; font-style: italic; }
+
+.details { width: 100%; background: var(--paper); border: 1px solid var(--accent); border-radius: 20px; }
+.row { padding: 22px 24px; text-align: center; }
+.row + .row { border-top: 1px solid rgba(180,154,126,.45); }
+.row .label { display: block; margin-bottom: 8px; }
+.val { font-size: 30px; font-weight: 500; line-height: 1.15; }
+.val-sm { font-size: 15px; font-weight: 300; color: var(--soft); margin-top: 6px; line-height: 1.5; }
+
+.swatches { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
+.swatches span { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--accent); }
+.bet { width: 100%; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.bet-grid { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+.bet-card { background: var(--paper); color: var(--ink); border: 1px solid var(--accent); border-radius: 18px; padding: 22px 12px 20px; }
+.bet-card.dark { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.bet-who { font-size: 34px; font-style: italic; font-weight: 500; line-height: 1; }
+.bet-gift { margin-top: 10px; font-size: 14px; font-weight: 400; line-height: 1.4; }
+.actions { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.btn {
+  display: flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 20px;
+  border-radius: 999px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink);
+  font-family: inherit; font-size: 13px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; text-decoration: none;
+}
+.btn.primary { background: var(--ink); color: var(--cream); }
+.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.note { margin: 0; text-align: center; font-size: 15px; font-weight: 300; line-height: 1.6; color: var(--soft); }
+.foot { text-align: center; font-size: 28px; font-style: italic; font-weight: 500; }
+.foot small { display: block; margin-bottom: 6px; font-family: 'Jost', sans-serif; font-style: normal; font-size: 12px; letter-spacing: .3em; font-weight: 500; color: var(--soft); }
+
+button.btn { width: 100%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+/* Evita el zoom por doble toque en botones (p. ej. tocar + varias veces). */
+button, a.btn { touch-action: manipulation; }
+body.modal-open { overflow: hidden; }
+.modal {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 20;
+  background: rgba(90,67,50,.5); display: none; align-items: flex-end; justify-content: center;
+  overscroll-behavior: contain;
+}
+.modal.show { display: flex; }
+.sheet {
+  width: 100%; max-width: 460px; max-height: 92%; overflow-y: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch; background: var(--paper);
+  border-radius: 24px 24px 0 0; padding: 28px 22px calc(28px + env(safe-area-inset-bottom, 0px));
+  animation: sheet .35s cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes sheet { from { transform: translateY(40px); opacity: 0 } to { transform: none; opacity: 1 } }
+/* Cabecera fija dentro de la hoja: la X sigue a mano aunque el formulario sea largo. */
+.sheet-head {
+  position: sticky; top: -28px; z-index: 2; margin: -28px -22px 6px; padding: 28px 22px 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--paper);
+}
+.sheet h3 { margin: 0; font-size: 32px; font-style: italic; font-weight: 500; line-height: 1.1; }
+.x {
+  flex: none; width: 48px; height: 48px; margin-right: -10px; border: 0; border-radius: 50%; background: none;
+  font-size: 34px; line-height: 1; color: var(--soft); cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+/* Computadora (~20 %): diálogo centrado en lugar de hoja inferior. */
+@media (min-width: 700px) and (hover: hover) {
+  .modal { align-items: center; }
+  .sheet { max-height: 88%; border-radius: 24px; padding-bottom: 28px; }
+}
+.sheet p.sub { margin: 0 0 18px; font-size: 15px; font-weight: 300; line-height: 1.55; color: var(--soft); }
+.guest { border: 1px solid var(--accent); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+.guest-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.guest-top .label { font-size: 11px; }
+.field { display: block; margin-bottom: 10px; }
+.field:last-child { margin-bottom: 0; }
+.field span { display: block; margin-bottom: 6px; font-size: 14px; letter-spacing: .04em; font-weight: 500; color: var(--soft); }
+.field input, .field textarea {
+  width: 100%; height: 50px; padding: 0 14px; border: 1px solid var(--accent); border-radius: 12px;
+  background: var(--paper); color: var(--ink); font-family: inherit; font-size: 17px;
+}
+.field textarea { height: auto; min-height: 96px; padding: 12px 14px; line-height: 1.5; resize: vertical; }
+.field input:focus, .field textarea:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+.field input.bad { border-color: #A4452C; border-width: 2px; }
+.field input::placeholder, .field textarea::placeholder { color: #A8957F; }
+
+.choice { display: grid; gap: 12px; margin-bottom: 20px; }
+.choice-btn {
+  width: 100%; min-height: 64px; padding: 12px 18px; border: 1.5px solid var(--accent); border-radius: 16px;
+  background: var(--paper); color: var(--ink); font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 24px; font-style: italic; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.choice-btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+.choice-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.block { margin-bottom: 16px; }
+.block > .label { display: block; margin-bottom: 10px; text-align: center; }
+.stepper { display: flex; align-items: center; justify-content: center; gap: 22px; }
+.step {
+  width: 56px; height: 56px; border-radius: 50%; border: 1.5px solid var(--ink); background: transparent;
+  color: var(--ink); font-family: inherit; font-size: 28px; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.step:disabled { opacity: .3; cursor: default; }
+.qty-num { min-width: 48px; text-align: center; font-size: 46px; font-weight: 500; line-height: 1; }
+.hint { margin: 8px 0 0; text-align: center; font-size: 14px; font-weight: 300; color: var(--soft); }
+.btn:disabled { opacity: .6; cursor: default; }
+.wa { margin-bottom: 12px; }
+.err { margin: 0 0 12px; font-size: 14px; color: #A4452C; }
+.done { text-align: center; padding: 8px 0 4px; }
+.done .big2 { font-size: 34px; font-style: italic; font-weight: 500; margin-bottom: 8px; }
+.msgbox { width: 100%; min-height: 150px; margin: 12px 0; padding: 12px; border: 1px solid var(--accent); border-radius: 12px; font-family: inherit; font-size: 14px; line-height: 1.5; color: var(--ink); background: var(--cream); resize: none; }
+@media (prefers-reduced-motion: reduce) {
+  .stage, .stage *, .invite, .invite * { animation: none !important; transition-duration: .01s !important; transition-delay: 0s !important; }
+}
+</style>
+</head>
+<body class="locked">
+
+<!-- Sobre -->
+<section class="stage" id="stage" aria-label="Invitación cerrada">
+  <div class="stage-sub">GENDER REVEAL</div>
+  <div>
+    <p class="stage-hello" id="stage-hello" hidden></p>
+    <h1 class="stage-title serif">Tienes una invitación</h1>
+  </div>
+  <button class="env-btn" id="open" type="button" aria-label="Abrir la invitación">
+    <div class="env">
+      <div class="env-back"></div>
+      <div class="letter">
+        <div class="letter-a">MIGUEL &amp; ANAÍS</div>
+        <div class="letter-b serif">Boy or girl?</div>
+      </div>
+      <div class="env-front"></div>
+      <div class="env-flap"></div>
+      <div class="seal serif">M&amp;A</div>
+    </div>
+  </button>
+  <div class="stage-hint">TOCA PARA ABRIR</div>
+</section>
+
+<!-- Invitación -->
+<main class="invite" id="invite">
+  <div class="wrap">
+
+    <section class="arch rise">
+      <div class="label">GENDER REVEAL</div>
+      <h2 class="big serif">Boy or girl?</h2>
+      <svg width="96" height="48" viewBox="0 0 96 48" aria-hidden="true">
+        <circle cx="34" cy="24" r="20" fill="#EADFCF" stroke="#B49A7E" stroke-width="1.5"></circle>
+        <circle cx="62" cy="24" r="20" fill="#5A4332" fill-opacity="0.85"></circle>
+      </svg>
+      <div class="names serif">Miguel &amp; Anaís</div>
+      <p class="hello serif" id="hello" hidden></p>
+      <p class="lead">te invitamos a descubrir con nosotros el sexo de nuestro bebé</p>
+      <p class="seats" id="seats" hidden></p>
+    </section>
+
+    <section class="count rise" aria-live="off">
+      <span class="label">FALTAN</span>
+      <div class="count-grid" id="count">
+        <div class="count-box"><div class="count-num serif" id="d">–</div><div class="count-lbl">DÍAS</div></div>
+        <div class="count-box"><div class="count-num serif" id="h">–</div><div class="count-lbl">HORAS</div></div>
+        <div class="count-box"><div class="count-num serif" id="m">–</div><div class="count-lbl">MIN</div></div>
+        <div class="count-box"><div class="count-num serif" id="s">–</div><div class="count-lbl">SEG</div></div>
+      </div>
+    </section>
+
+    <section class="details rise">
+      <div class="row">
+        <span class="label">FECHA</span>
+        <div class="val serif">Sábado 7 de noviembre</div>
+        <div class="val-sm">2026</div>
+      </div>
+      <div class="row">
+        <span class="label">HORA</span>
+        <div class="val serif">1:00 p. m.</div>
+        <div class="val-sm">Almuerzo incluido</div>
+      </div>
+      <div class="row">
+        <span class="label">LUGAR</span>
+        <div class="val serif" id="venue">Pachacámac, Lima</div>
+        <div class="val-sm" id="address" hidden></div>
+      </div>
+      <div class="row">
+        <span class="label">DRESS CODE</span>
+        <div class="val serif">Libre</div>
+        <div class="val-sm">Vístete a tu gusto, en tonos blanco, beige y marrón</div>
+        <div class="swatches" aria-hidden="true">
+          <span style="background:#FFFFFF"></span>
+          <span style="background:#EADFCF"></span>
+          <span style="background:#B49A7E"></span>
+          <span style="background:#5A4332"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="bet rise">
+      <span class="label">¿QUÉ CREES QUE SERÁ?</span>
+      <p class="lead">Apuesta y trae tu regalito:</p>
+      <div class="bet-grid">
+        <div class="bet-card">
+          <div class="bet-who serif">Niño</div>
+          <div class="bet-gift">Trae pañales</div>
+        </div>
+        <div class="bet-card dark">
+          <div class="bet-who serif">Niña</div>
+          <div class="bet-gift">Trae pañitos húmedos</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="actions rise">
+      <button class="btn primary" id="rsvp" type="button">Confirmar asistencia</button>
+      <p class="note" id="deadline" hidden></p>
+      <a class="btn" id="map" href="#" target="_blank" rel="noopener">Cómo llegar</a>
+      <a class="btn" id="cal" href="#" target="_blank" rel="noopener">Agregar al calendario</a>
+    </section>
+
+    <div class="foot serif rise"><small>TE ESPERAMOS</small>Miguel &amp; Anaís</div>
+
+  </div>
+</main>
+
+<!-- Formulario de confirmación -->
+<div class="modal" id="rsvp-modal" role="dialog" aria-modal="true" aria-labelledby="rsvp-title">
+  <div class="sheet">
+    <div id="rsvp-form-view">
+      <div class="sheet-head">
+        <h3 class="serif" id="rsvp-title">Confirmar asistencia</h3>
+        <button class="x" id="rsvp-close" type="button" aria-label="Cerrar">&times;</button>
+      </div>
+      <p class="sub" id="rsvp-sub">¿Nos acompañarán?</p>
+      <div class="choice" role="group" aria-label="¿Asistirán?">
+        <button class="choice-btn" id="ans-yes" type="button" aria-pressed="false">Sí, asistiremos</button>
+        <button class="choice-btn" id="ans-no" type="button" aria-pressed="false">No podremos asistir</button>
+      </div>
+
+      <div id="yes-block" hidden>
+        <div class="block" id="qty-block">
+          <span class="label">¿CUÁNTOS ASISTIRÁN?</span>
+          <div class="stepper">
+            <button class="step" id="qty-minus" type="button" aria-label="Una persona menos">&minus;</button>
+            <output class="qty-num serif" id="qty" aria-live="polite">1</output>
+            <button class="step" id="qty-plus" type="button" aria-label="Una persona más">+</button>
+          </div>
+          <p class="hint" id="qty-hint"></p>
+        </div>
+        <p class="sub">Escribe el nombre y apellido de cada persona que vendrá.</p>
+        <div id="guests"></div>
+        <label class="field block">
+          <span>Restricción alimentaria (opcional)</span>
+          <input type="text" id="diet" maxlength="120" autocomplete="off" autocapitalize="sentences" enterkeyhint="next" placeholder="Ej. vegetariano, alergia al maní">
+        </label>
+      </div>
+
+      <div id="no-block" hidden>
+        <label class="field block" id="no-name-wrap">
+          <span>Tu nombre y apellido</span>
+          <input type="text" id="no-name" maxlength="60" autocomplete="name" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="next">
+        </label>
+      </div>
+
+      <div id="send-block" hidden>
+        <label class="field block">
+          <span>Comentario (opcional)</span>
+          <textarea id="comment" maxlength="300" rows="3" placeholder="Un mensaje para Miguel y Anaís"></textarea>
+        </label>
+        <p class="err" id="rsvp-err" hidden></p>
+        <button class="btn primary" id="rsvp-send" type="button">Enviar respuesta</button>
+      </div>
+    </div>
+    <div id="rsvp-done-view" class="done" hidden>
+      <div class="big2 serif">¡Gracias!</div>
+      <p class="sub" id="rsvp-done-text"></p>
+      <a class="btn primary wa" id="rsvp-wa" href="#" target="_blank" rel="noopener" hidden>Enviar por WhatsApp</a>
+      <textarea class="msgbox" id="rsvp-msg" readonly hidden></textarea>
+      <button class="btn primary" id="rsvp-copy" type="button" hidden>Copiar mensaje</button>
+      <button class="btn" id="rsvp-ok" type="button" style="margin-top:12px">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Completa estos datos y vuelve a publicar:
+var CONFIG = {
+  venueName: 'Fundo Querencia Alta',
+  venueAddress: '',     // ej. 'Av. Principal 123, Pachacámac'
+  mapsUrl: 'https://maps.app.goo.gl/JbFUyARZbP4ak7o27?g_st=ic',
+  rsvpPhone: '',        // ej. '51999999999' (código de país + número, sin + ni espacios)
+  rsvpEndpoint: '',     // URL /exec del Apps Script (ver apps-script/Code.gs)
+  rsvpDeadline: '',     // TODO: ej. 'sábado 24 de octubre' → "Confirma antes del sábado 24 de octubre"
+  defaultSeats: 2       // cupos cuando el link no trae ?c=
+};
+
+(function () {
+  var stage = document.getElementById('stage');
+  var invite = document.getElementById('invite');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var opened = false;
+
+  function openInvite() {
+    if (opened) return;
+    opened = true;
+    stage.classList.add('open');
+    setTimeout(function () {
+      stage.classList.add('gone');
+      document.body.classList.remove('locked');
+      invite.classList.add('show');
+      window.scrollTo(0, 0);
+    }, reduce ? 200 : 2100);
+  }
+  document.getElementById('open').addEventListener('click', openInvite);
+
+  // Personalización por hogar: ?h=007&n=Yembert+y+Laura&c=2
+  var MAX_SEATS = 10;
+  var MAX_NAME = 60;
+  function readParams() {
+    var out = { h: '', n: '', c: 0 };
+    var q;
+    try { q = new URLSearchParams(window.location.search); } catch (e) { return out; }
+    var h = (q.get('h') || '').trim();
+    if (/^[A-Za-z0-9_-]{1,12}$/.test(h)) out.h = h;
+    var n = (q.get('n') || '').replace(/[\u0000-\u001F\u007F<>{}]/g, '').replace(/\s+/g, ' ').trim();
+    if (n.length > MAX_NAME) n = n.slice(0, MAX_NAME).trim();
+    out.n = n;
+    var c = (q.get('c') || '').trim();
+    if (/^\d{1,2}$/.test(c) && +c >= 1 && +c <= MAX_SEATS) out.c = +c;
+    return out;
+  }
+  // "Yembert y Laura" → ["Yembert", "Laura"]; omite "Familia Pérez" y títulos (Sr., Tía…)
+  function firstNames(n) {
+    if (!n) return [];
+    return n.split(/\s*,\s*|\s*&\s*|\s*\+\s*|\s+y\s+|\s+e\s+/i)
+      .map(function (t) { return t.replace(/^(sr|sra|srta|dr|dra|don|doña|tío|tía|tio|tia)\.?\s+/i, '').trim(); })
+      .filter(function (t) { return t && !/^(familia|fam\.?)(\s|$)/i.test(t); });
+  }
+  var P = readParams();
+  var seats = P.c || Math.min(Math.max(CONFIG.defaultSeats || 1, 1), MAX_SEATS);
+  var prefill = firstNames(P.n);
+
+  if (P.n) {
+    var sh = document.getElementById('stage-hello');
+    sh.textContent = 'Hola, ' + P.n;
+    sh.hidden = false;
+    var hi = document.getElementById('hello');
+    hi.textContent = P.n + ',';
+    hi.hidden = false;
+  }
+  if (P.c) {
+    var se = document.getElementById('seats');
+    se.textContent = P.c === 1 ? 'Reservamos 1 lugar para ti' : 'Reservamos ' + P.c + ' lugares para ustedes';
+    se.hidden = false;
+  }
+  if (CONFIG.rsvpDeadline) {
+    var dl = document.getElementById('deadline');
+    dl.textContent = 'Confirma antes del ' + CONFIG.rsvpDeadline;
+    dl.hidden = false;
+    document.getElementById('rsvp-sub').textContent = '¿Nos acompañarán? Confirma antes del ' + CONFIG.rsvpDeadline + '.';
+  }
+
+  // Datos del lugar
+  if (CONFIG.venueName) {
+    document.getElementById('venue').textContent = CONFIG.venueName;
+    var a = document.getElementById('address');
+    a.textContent = (CONFIG.venueAddress ? CONFIG.venueAddress + ' · ' : '') + 'Pachacámac, Lima';
+    a.hidden = false;
+  } else if (CONFIG.venueAddress) {
+    var a2 = document.getElementById('address');
+    a2.textContent = CONFIG.venueAddress;
+    a2.hidden = false;
+  }
+  document.getElementById('map').href = CONFIG.mapsUrl ||
+    'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((CONFIG.venueName ? CONFIG.venueName + ' ' : '') + 'Pachacámac, Lima');
+
+  // Formulario de confirmación
+  var modal = document.getElementById('rsvp-modal');
+  var guestsEl = document.getElementById('guests');
+  var errEl = document.getElementById('rsvp-err');
+  var formView = document.getElementById('rsvp-form-view');
+  var doneView = document.getElementById('rsvp-done-view');
+  var yesBtn = document.getElementById('ans-yes');
+  var noBtn = document.getElementById('ans-no');
+  var yesBlock = document.getElementById('yes-block');
+  var noBlock = document.getElementById('no-block');
+  var sendBlock = document.getElementById('send-block');
+  var sendBtn = document.getElementById('rsvp-send');
+  var qtyEl = document.getElementById('qty');
+  var minusBtn = document.getElementById('qty-minus');
+  var plusBtn = document.getElementById('qty-plus');
+  var answer = null;
+  var qty = Math.min(Math.max(prefill.length, 1), seats);
+  var sending = false;
+
+  // Sin nombres en el link pedimos uno al declinar; con nombres no hace falta.
+  document.getElementById('no-name-wrap').hidden = !!P.n;
+  document.getElementById('qty-block').hidden = seats === 1;
+  document.getElementById('qty-hint').textContent = 'Máximo ' + seats + (seats === 1 ? ' persona' : ' personas');
+
+  function makeField(labelText, cls, auto, value) {
+    var l = document.createElement('label');
+    l.className = 'field';
+    var s = document.createElement('span');
+    s.textContent = labelText;
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = cls;
+    inp.maxLength = 60;
+    inp.setAttribute('autocomplete', auto || 'off');
+    // En el celular: mayúscula inicial y sin autocorrector (cambia apellidos).
+    inp.setAttribute('autocapitalize', 'words');
+    inp.setAttribute('autocorrect', 'off');
+    inp.setAttribute('spellcheck', 'false');
+    inp.setAttribute('enterkeyhint', 'next');
+    if (value) inp.value = value;
+    l.appendChild(s);
+    l.appendChild(inp);
+    return l;
+  }
+  function addGuest() {
+    var i = guestsEl.children.length;
+    var g = document.createElement('div');
+    g.className = 'guest';
+    var top = document.createElement('div');
+    top.className = 'guest-top';
+    var lab = document.createElement('span');
+    lab.className = 'label';
+    lab.textContent = 'ASISTENTE ' + (i + 1);
+    top.appendChild(lab);
+    g.appendChild(top);
+    g.appendChild(makeField('Nombre', 'g-first', i === 0 ? 'given-name' : 'off', prefill[i]));
+    g.appendChild(makeField('Apellido', 'g-last', i === 0 ? 'family-name' : 'off'));
+    guestsEl.appendChild(g);
+  }
+  function setQty(v) {
+    qty = Math.min(Math.max(v, 1), seats);
+    while (guestsEl.children.length < qty) addGuest();
+    while (guestsEl.children.length > qty) guestsEl.removeChild(guestsEl.lastChild);
+    qtyEl.textContent = qty;
+    minusBtn.disabled = qty <= 1;
+    plusBtn.disabled = qty >= seats;
+  }
+  function setAnswer(a) {
+    answer = a;
+    yesBtn.setAttribute('aria-pressed', a === 'si' ? 'true' : 'false');
+    noBtn.setAttribute('aria-pressed', a === 'no' ? 'true' : 'false');
+    yesBlock.hidden = a !== 'si';
+    noBlock.hidden = a !== 'no';
+    sendBlock.hidden = !a;
+    sendBtn.textContent = a === 'si' ? 'Enviar confirmación' : 'Enviar respuesta';
+    errEl.hidden = true;
+  }
+  // El botón "atrás" del celular cierra el formulario en vez de salir de la invitación.
+  var pushed = false;
+  function openModal() {
+    errEl.hidden = true;
+    formView.hidden = false;
+    doneView.hidden = true;
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+    fitViewport();
+    if (!pushed) { try { history.pushState({ rsvp: 1 }, ''); pushed = true; } catch (e) {} }
+    (answer === 'no' ? noBtn : yesBtn).focus();
+  }
+  function closeModal(fromHistory) {
+    if (!modal.classList.contains('show')) return;
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    modal.style.top = modal.style.height = modal.style.bottom = '';
+    if (pushed) {
+      pushed = false;
+      if (fromHistory !== true) history.back();
+    }
+  }
+  window.addEventListener('popstate', function () { pushed = false; closeModal(true); });
+
+  // Con el teclado abierto, la hoja se ajusta al área visible y el campo activo queda a la vista.
+  function fitViewport() {
+    var vv = window.visualViewport;
+    if (!vv || !modal.classList.contains('show')) return;
+    modal.style.top = vv.offsetTop + 'px';
+    modal.style.height = vv.height + 'px';
+    modal.style.bottom = 'auto';
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', fitViewport);
+    window.visualViewport.addEventListener('scroll', fitViewport);
+  }
+  modal.addEventListener('focusin', function (e) {
+    var t = e.target;
+    if (t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA') return;
+    setTimeout(function () {
+      try { t.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' }); } catch (err) {}
+    }, 300);
+  });
+  // "Siguiente" en el teclado pasa al próximo campo.
+  formView.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+    e.preventDefault();
+    var fields = [].filter.call(formView.querySelectorAll('input, textarea'), function (el) { return !el.closest('[hidden]'); });
+    var next = fields[fields.indexOf(e.target) + 1];
+    if (next) next.focus(); else e.target.blur();
+  });
+  function clean(v, max) { return (v || '').replace(/\s+/g, ' ').trim().slice(0, max); }
+  function collectGuests() {
+    var rows = guestsEl.querySelectorAll('.guest');
+    var out = [], firstBad = null;
+    for (var i = 0; i < rows.length; i++) {
+      var a = rows[i].querySelector('.g-first');
+      var b = rows[i].querySelector('.g-last');
+      var fa = clean(a.value, 60), fb = clean(b.value, 60);
+      a.classList.toggle('bad', !fa);
+      b.classList.toggle('bad', !fb);
+      if (!fa && !firstBad) firstBad = a;
+      if (!fb && !firstBad) firstBad = b;
+      out.push(fa + ' ' + fb);
+    }
+    if (firstBad) { firstBad.focus(); return null; }
+    return out;
+  }
+  function showError(t) {
+    errEl.textContent = t;
+    errEl.hidden = false;
+  }
+  function buildMessage(d) {
+    var where = CONFIG.venueName || 'Pachacámac';
+    var msg;
+    if (d.respuesta === 'si') {
+      msg = '¡Hola! Confirmamos nuestra asistencia al gender reveal de Miguel y Anaís (sábado 7 de noviembre, 1:00 p. m., ' + where + ').\n\n' +
+        'Asistentes (' + d.cantidad + '):\n';
+      for (var i = 0; i < d.asistentes.length; i++) msg += (i + 1) + '. ' + d.asistentes[i] + '\n';
+      if (d.restricciones) msg += '\nRestricción alimentaria: ' + d.restricciones + '\n';
+    } else {
+      msg = '¡Hola! Lamentablemente no podremos asistir al gender reveal de Miguel y Anaís.\n\n— ' + d.hogar + '\n';
+    }
+    if (d.comentario) msg += '\nComentario: ' + d.comentario + '\n';
+    if (d.h) msg += '\n(Invitación ' + d.h + ')';
+    return msg.trim();
+  }
+  function postRsvp(data) {
+    if (!CONFIG.rsvpEndpoint || !window.fetch) return Promise.resolve(false);
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 15000);
+    // text/plain evita el preflight CORS, que Apps Script no responde.
+    return fetch(CONFIG.rsvpEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data),
+      signal: ctrl ? ctrl.signal : undefined
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { return !!(j && j.ok); }, function () { return false; })
+      .then(function (ok) { clearTimeout(timer); return ok; });
+  }
+  function showDone(data, ok) {
+    var text = document.getElementById('rsvp-done-text');
+    var box = document.getElementById('rsvp-msg');
+    var copyBtn = document.getElementById('rsvp-copy');
+    var wa = document.getElementById('rsvp-wa');
+    var msg = buildMessage(data);
+    box.value = msg;
+    formView.hidden = true;
+    doneView.hidden = false;
+    if (ok) {
+      text.textContent = data.respuesta === 'si'
+        ? 'Recibimos tu confirmación. ¡Te esperamos el sábado 7 de noviembre!'
+        : 'Gracias por avisarnos. ¡Te vamos a extrañar!';
+      wa.hidden = true;
+      box.hidden = true;
+      copyBtn.hidden = true;
+      document.getElementById('rsvp').textContent = 'Cambiar mi respuesta';
+      return;
+    }
+    if (CONFIG.rsvpPhone) {
+      text.textContent = 'No pudimos registrar tu respuesta automáticamente. Envíanosla por WhatsApp con un solo toque:';
+      wa.href = 'https://wa.me/' + CONFIG.rsvpPhone + '?text=' + encodeURIComponent(msg);
+      wa.hidden = false;
+    } else {
+      text.textContent = 'No pudimos registrar tu respuesta automáticamente. Copia este mensaje y envíalo a Miguel o Anaís:';
+      wa.hidden = true;
+    }
+    box.hidden = false;
+    copyBtn.hidden = false;
+    copyBtn.textContent = 'Copiar mensaje';
+  }
+  function copyText(text, ta) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return legacy(); });
+      }
+    } catch (e) {}
+    return Promise.resolve(legacy());
+    function legacy() {
+      try { ta.hidden = false; ta.focus(); ta.select(); return document.execCommand('copy'); } catch (e) { return false; }
+    }
+  }
+
+  setQty(qty);
+  document.getElementById('rsvp').addEventListener('click', openModal);
+  document.getElementById('rsvp-close').addEventListener('click', function () { closeModal(); });
+  document.getElementById('rsvp-ok').addEventListener('click', function () { closeModal(); });
+  modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+  yesBtn.addEventListener('click', function () { setAnswer('si'); });
+  noBtn.addEventListener('click', function () { setAnswer('no'); });
+  minusBtn.addEventListener('click', function () { setQty(qty - 1); });
+  plusBtn.addEventListener('click', function () {
+    setQty(qty + 1);
+    var last = guestsEl.lastChild && guestsEl.lastChild.querySelector('input');
+    if (last && !last.value) last.focus();
+  });
+
+  sendBtn.addEventListener('click', function () {
+    if (sending || !answer) return;
+    var data = {
+      h: P.h,
+      hogar: P.n,
+      respuesta: answer,
+      cantidad: 0,
+      asistentes: [],
+      restricciones: '',
+      comentario: clean(document.getElementById('comment').value, 300),
+      cupos: seats
+    };
+    if (answer === 'si') {
+      var names = collectGuests();
+      if (!names) return showError('Completa nombre y apellido de cada asistente.');
+      data.cantidad = names.length;
+      data.asistentes = names;
+      data.restricciones = clean(document.getElementById('diet').value, 120);
+      if (!data.hogar) data.hogar = names.join(', ');
+    } else if (!data.hogar) {
+      var nn = document.getElementById('no-name');
+      data.hogar = clean(nn.value, 60);
+      nn.classList.toggle('bad', !data.hogar);
+      if (!data.hogar) { nn.focus(); return showError('Escribe tu nombre para saber quién nos avisa.'); }
+    }
+    errEl.hidden = true;
+    sending = true;
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Enviando…';
+    postRsvp(data).then(function (ok) {
+      sending = false;
+      sendBtn.disabled = false;
+      setAnswer(answer);
+      showDone(data, ok);
+    });
+  });
+  document.getElementById('rsvp-copy').addEventListener('click', function () {
+    var btn = this;
+    copyText(document.getElementById('rsvp-msg').value, document.getElementById('rsvp-msg')).then(function (ok) {
+      btn.textContent = ok ? '¡Copiado!' : 'Selecciona y copia el texto';
+    });
+  });
+  // Calendario (1:00 p. m. hora de Lima = 18:00 UTC, 4 horas)
+  document.getElementById('cal').href =
+    'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+    '&text=' + encodeURIComponent('Gender Reveal de Miguel y Anaís') +
+    '&dates=20261107T180000Z/20261107T220000Z' +
+    '&location=' + encodeURIComponent((CONFIG.venueName ? CONFIG.venueName + ', ' : '') + 'Pachacámac, Lima') +
+    '&details=' + encodeURIComponent('Ven a descubrir con nosotros si nuestro bebé es niño o niña.');
+
+  // Cuenta regresiva
+  var target = new Date('2026-11-07T13:00:00-05:00').getTime();
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function tick() {
+    var diff = target - Date.now();
+    var grid = document.getElementById('count');
+    if (diff <= 0) {
+      grid.style.display = 'block';
+      grid.innerHTML = '<div class="count-done serif">¡Es hoy!</div>';
+      return;
+    }
+    var s = Math.floor(diff / 1000);
+    document.getElementById('d').textContent = Math.floor(s / 86400);
+    document.getElementById('h').textContent = pad(Math.floor((s % 86400) / 3600));
+    document.getElementById('m').textContent = pad(Math.floor((s % 3600) / 60));
+    document.getElementById('s').textContent = pad(s % 60);
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
