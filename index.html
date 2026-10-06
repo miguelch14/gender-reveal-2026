@@ -414,7 +414,7 @@ var CONFIG = {
   venueName: 'Fundo Querencia Alta',
   venueAddress: '',     // ej. 'Av. Principal 123, Pachacámac'
   mapsUrl: 'https://maps.app.goo.gl/JbFUyARZbP4ak7o27?g_st=ic',
-  rsvpPhone: '',        // ej. '51999999999' (código de país + número, sin + ni espacios)
+  rsvpPhone: '',        // opcional; vacío = el invitado elige el chat (no publiques tu número en el repo)
   rsvpEndpoint: 'https://script.google.com/macros/s/AKfycbyO_VTeg-icLjd4H5w0gKcMnUSnR3y9BPo-uEL6gX24m3p2sj77BbGQGdNGTn5TG0DM/exec',
   rsvpDeadline: '',     // TODO: ej. 'sábado 24 de octubre' → "Confirma antes del sábado 24 de octubre"
   defaultSeats: 2       // cupos cuando el link no trae ?c=
@@ -698,14 +698,12 @@ var CONFIG = {
       document.getElementById('rsvp').textContent = 'Cambiar mi respuesta';
       return;
     }
-    if (CONFIG.rsvpPhone) {
-      text.textContent = 'No pudimos registrar tu respuesta automáticamente. Envíanosla por WhatsApp con un solo toque:';
-      wa.href = 'https://wa.me/' + CONFIG.rsvpPhone + '?text=' + encodeURIComponent(msg);
-      wa.hidden = false;
-    } else {
-      text.textContent = 'No pudimos registrar tu respuesta automáticamente. Copia este mensaje y envíalo a Miguel o Anaís:';
-      wa.hidden = true;
-    }
+    // Sin número, wa.me abre WhatsApp con el mensaje listo y el invitado elige el chat.
+    wa.href = 'https://wa.me/' + (CONFIG.rsvpPhone || '') + '?text=' + encodeURIComponent(msg);
+    wa.hidden = false;
+    text.textContent = CONFIG.rsvpPhone
+      ? 'No pudimos registrar tu respuesta automáticamente. Envíanosla por WhatsApp con un solo toque:'
+      : 'No pudimos registrar tu respuesta automáticamente. Toca el botón, elige el chat de Miguel o Anaís y envía el mensaje:';
     box.hidden = false;
     copyBtn.hidden = false;
     copyBtn.textContent = 'Copiar mensaje';
