@@ -19,6 +19,8 @@
   --env: #D8C6AB;
   --env-dark: #C9B493;
   --cream: #F7F1E7;
+  --boy: #6A93B4;
+  --girl: #C27585;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -27,11 +29,13 @@
   :root:not([data-theme="light"]) {
     --ground: #EADFCF; --paper: #FFFFFF; --ink: #5A4332; --soft: #7A6451;
     --accent: #B49A7E; --env: #D8C6AB; --env-dark: #C9B493; --cream: #F7F1E7;
+    --boy: #6A93B4; --girl: #C27585;
   }
 }
 :root[data-theme="dark"] {
   --ground: #EADFCF; --paper: #FFFFFF; --ink: #5A4332; --soft: #7A6451;
   --accent: #B49A7E; --env: #D8C6AB; --env-dark: #C9B493; --cream: #F7F1E7;
+  --boy: #6A93B4; --girl: #C27585;
 }
 html { scroll-padding-top: env(safe-area-inset-top, 0px); }
 *, *::before, *::after { box-sizing: border-box; }
@@ -45,6 +49,8 @@ body {
 }
 body.locked { overflow: hidden; height: 100%; }
 .serif { font-family: 'Cormorant Garamond', Georgia, serif; }
+.boy { color: var(--boy); }
+.girl { color: var(--girl); }
 
 /* ---------- Sobre ---------- */
 .stage {
@@ -255,7 +261,7 @@ body.modal-open { overflow: hidden; }
       <div class="env-back"></div>
       <div class="letter">
         <div class="letter-a">MIGUEL &amp; ANAÍS</div>
-        <div class="letter-b serif">Boy or girl?</div>
+        <div class="letter-b serif"><span class="boy">Boy</span> or <span class="girl">girl</span>?</div>
       </div>
       <div class="env-front"></div>
       <div class="env-flap"></div>
@@ -271,7 +277,7 @@ body.modal-open { overflow: hidden; }
 
     <section class="arch rise">
       <div class="label">GENDER REVEAL</div>
-      <h2 class="big serif">Boy or girl?</h2>
+      <h2 class="big serif"><span class="boy">Boy</span> or <span class="girl">girl</span>?</h2>
       <svg width="96" height="48" viewBox="0 0 96 48" aria-hidden="true">
         <circle cx="34" cy="24" r="20" fill="#EADFCF" stroke="#B49A7E" stroke-width="1.5"></circle>
         <circle cx="62" cy="24" r="20" fill="#5A4332" fill-opacity="0.85"></circle>
