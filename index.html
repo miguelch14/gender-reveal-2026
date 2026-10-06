@@ -190,7 +190,9 @@ body .stage.open > .stage-hint { opacity: 0; animation: none; }
 .big { margin: 0; font-style: italic; font-weight: 500; font-size: clamp(48px, 15vw, 66px); line-height: 1; }
 .names { font-size: 36px; font-weight: 500; line-height: 1.1; }
 .lead { margin: 0; max-width: 300px; font-size: 16px; font-weight: 300; line-height: 1.65; color: var(--soft); }
-.hello { margin: 0 0 -12px; max-width: 320px; font-size: 26px; font-style: italic; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+.from-to { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.from-to .label { display: block; margin-bottom: 6px; font-size: 11px; }
+.hello { margin: 0; max-width: 320px; font-size: 26px; font-style: italic; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
 .seats { margin: 0; font-size: 12px; letter-spacing: .2em; font-weight: 500; color: var(--soft); text-transform: uppercase; }
 
 /* ---------- Historia (fotos con aparición y parallax suave; el scroll nunca se bloquea) ---------- */
@@ -383,8 +385,10 @@ body.modal-open { overflow: hidden; }
         <circle cx="34" cy="24" r="20" fill="#EADFCF" stroke="#B49A7E" stroke-width="1.5"></circle>
         <circle cx="62" cy="24" r="20" fill="#5A4332" fill-opacity="0.85"></circle>
       </svg>
-      <div class="names serif">Miguel &amp; Anaís</div>
-      <p class="hello serif" id="hello" hidden></p>
+      <div class="from-to">
+        <div><span class="label">DE:</span><div class="names serif">Miguel &amp; Anaís</div></div>
+        <div id="to-wrap" hidden><span class="label">PARA:</span><p class="hello serif" id="hello"></p></div>
+      </div>
       <p class="lead">te invitamos a descubrir con nosotros el sexo de nuestro bebé</p>
       <p class="seats" id="seats" hidden></p>
     </section>
@@ -661,8 +665,8 @@ var CONFIG = {
     sh.textContent = 'Hola, ' + P.n;
     sh.hidden = false;
     var hi = document.getElementById('hello');
-    hi.textContent = P.n + ',';
-    hi.hidden = false;
+    hi.textContent = P.n;
+    document.getElementById('to-wrap').hidden = false;
   }
   if (P.c) {
     var se = document.getElementById('seats');
