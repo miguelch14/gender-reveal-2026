@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Gender Reveal · Miguel &amp; Anaís</title>
 <meta property="og:title" content="Boy or girl? · Miguel &amp; Anaís">
-<meta property="og:description" content="Te invitamos a descubrir con nosotros el sexo de nuestro bebé. Sábado 7 de noviembre, 1:00 p. m.">
+<meta property="og:description" content="Te invitamos a descubrir con nosotros el sexo de nuestro bebé. Sábado 7 de noviembre, 12:00 m.">
 <meta property="og:type" content="website">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -444,7 +444,7 @@ body.modal-open { overflow: hidden; }
       </div>
       <div class="row">
         <span class="label">HORA</span>
-        <div class="val serif">1:00 p. m.</div>
+        <div class="val serif">12:00 m.</div>
         <div class="val-sm">Almuerzo incluido</div>
       </div>
       <div class="row">
@@ -843,7 +843,7 @@ var CONFIG = {
     var where = CONFIG.venueName || 'Pachacámac';
     var msg;
     if (d.respuesta === 'si') {
-      msg = '¡Hola! Confirmamos nuestra asistencia al gender reveal de Miguel y Anaís (sábado 7 de noviembre, 1:00 p. m., ' + where + ').\n\n' +
+      msg = '¡Hola! Confirmamos nuestra asistencia al gender reveal de Miguel y Anaís (sábado 7 de noviembre, 12:00 m., ' + where + ').\n\n' +
         'Asistentes (' + d.cantidad + '):\n';
       for (var i = 0; i < d.asistentes.length; i++) msg += (i + 1) + '. ' + d.asistentes[i] + '\n';
       if (d.restricciones) msg += '\nRestricción alimentaria: ' + d.restricciones + '\n';
@@ -977,11 +977,11 @@ var CONFIG = {
       btn.textContent = ok ? '¡Copiado!' : 'Selecciona y copia el texto';
     });
   });
-  // Calendario (1:00 p. m. hora de Lima = 18:00 UTC, 4 horas): tres opciones siempre visibles.
+  // Calendario (12:00 m. hora de Lima = 17:00 UTC, hasta las 5:00 p. m.): tres opciones siempre visibles.
   // Si cambias fecha o lugar, actualiza también assets/gender-reveal.ics.
   document.getElementById('cal-google').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
     '&text=' + encodeURIComponent('Gender Reveal de Miguel y Anaís') +
-    '&dates=20261107T180000Z/20261107T220000Z' +
+    '&dates=20261107T170000Z/20261107T220000Z' +
     '&location=' + encodeURIComponent((CONFIG.venueName ? CONFIG.venueName + ', ' : '') + 'Pachacámac, Lima') +
     '&details=' + encodeURIComponent('Ven a descubrir con nosotros si nuestro bebé es niño o niña.\n\nCómo llegar: ' + CONFIG.mapsUrl);
   var calMenu = document.getElementById('cal-menu');
@@ -991,7 +991,7 @@ var CONFIG = {
   }
 
   // Cuenta regresiva
-  var target = new Date('2026-11-07T13:00:00-05:00').getTime();
+  var target = new Date('2026-11-07T12:00:00-05:00').getTime();
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
   function tick() {
     var diff = target - Date.now();
