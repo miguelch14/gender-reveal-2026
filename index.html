@@ -807,6 +807,7 @@ var CONFIG = {
       title.textContent = '¡Gracias!';
       retry.hidden = false;
       retry.className = 'btn';
+      retry.textContent = 'Cambiar respuesta';
       box.hidden = true;
       copyBtn.hidden = true;
       document.getElementById('rsvp').textContent = 'Cambiar respuesta';
@@ -814,10 +815,11 @@ var CONFIG = {
     }
     // Sin enlace a WhatsApp: desde su navegador interno, al volver se recarga la invitación desde cero.
     title.textContent = 'Casi listo';
-    text.textContent = 'No pudimos enviar tu respuesta. Revisa tu conexión, toca "Cambiar respuesta" y vuelve a enviarla; tus datos siguen guardados. ' +
+    text.textContent = 'No pudimos enviar tu respuesta. Revisa tu conexión e inténtalo de nuevo; tus datos siguen guardados. ' +
       'Si sigue sin funcionar, copia este mensaje y envíaselo a Miguel o Anaís.';
     retry.hidden = false;
     retry.className = 'btn primary';
+    retry.textContent = 'Intentar de nuevo';
     box.hidden = false;
     copyBtn.hidden = false;
     copyBtn.textContent = 'Copiar mensaje';
