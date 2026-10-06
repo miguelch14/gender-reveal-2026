@@ -477,7 +477,7 @@ body.modal-open { overflow: hidden; }
     <div id="rsvp-done-view" class="done" hidden>
       <div class="big2 serif" id="rsvp-done-title">¡Gracias!</div>
       <p class="sub" id="rsvp-done-text"></p>
-      <button class="btn primary" id="rsvp-retry" type="button" hidden>Intentar de nuevo</button>
+      <button class="btn primary" id="rsvp-retry" type="button" hidden>Cambiar respuesta</button>
       <textarea class="msgbox" id="rsvp-msg" readonly hidden></textarea>
       <button class="btn" id="rsvp-copy" type="button" hidden>Copiar mensaje</button>
       <button class="btn" id="rsvp-ok" type="button">Cerrar</button>
@@ -805,17 +805,19 @@ var CONFIG = {
         ? 'Recibimos tu confirmación. ¡Te esperamos el sábado 7 de noviembre!'
         : 'Gracias por avisarnos. ¡Te vamos a extrañar!';
       title.textContent = '¡Gracias!';
-      retry.hidden = true;
+      retry.hidden = false;
+      retry.className = 'btn';
       box.hidden = true;
       copyBtn.hidden = true;
-      document.getElementById('rsvp').textContent = 'Cambiar mi respuesta';
+      document.getElementById('rsvp').textContent = 'Cambiar respuesta';
       return;
     }
     // Sin enlace a WhatsApp: desde su navegador interno, al volver se recarga la invitación desde cero.
     title.textContent = 'Casi listo';
-    text.textContent = 'No pudimos enviar tu respuesta. Revisa tu conexión e inténtalo de nuevo; tus datos siguen guardados. ' +
+    text.textContent = 'No pudimos enviar tu respuesta. Revisa tu conexión, toca "Cambiar respuesta" y vuelve a enviarla; tus datos siguen guardados. ' +
       'Si sigue sin funcionar, copia este mensaje y envíaselo a Miguel o Anaís.';
     retry.hidden = false;
+    retry.className = 'btn primary';
     box.hidden = false;
     copyBtn.hidden = false;
     copyBtn.textContent = 'Copiar mensaje';
