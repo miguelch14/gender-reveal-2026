@@ -439,7 +439,7 @@ var CONFIG = {
   }
   document.getElementById('open').addEventListener('click', openInvite);
 
-  // Personalización por hogar: ?h=007&n=Yembert+y+Laura&c=2
+  // Personalización por hogar: ?h=k7p2qx&n=Juan+y+Mar%C3%ADa&c=2
   var MAX_SEATS = 10;
   var MAX_NAME = 60;
   function readParams() {
@@ -455,7 +455,7 @@ var CONFIG = {
     if (/^\d{1,2}$/.test(c) && +c >= 1 && +c <= MAX_SEATS) out.c = +c;
     return out;
   }
-  // "Yembert y Laura" → ["Yembert", "Laura"]; omite "Familia Pérez" y títulos (Sr., Tía…)
+  // "Juan y María" → ["Juan", "María"]; omite "Familia Pérez" y títulos (Sr., Tía…)
   function firstNames(n) {
     if (!n) return [];
     return n.split(/\s*,\s*|\s*&\s*|\s*\+\s*|\s+y\s+|\s+e\s+/i)

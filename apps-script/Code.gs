@@ -1,4 +1,8 @@
 /**
+ * @OnlyCurrentDoc  (el script solo puede tocar esta hoja, no el resto de tu Drive)
+ */
+
+/**
  * Backend de confirmaciones del gender reveal de Miguel & Anaís.
  *
  * Guarda cada respuesta en la hoja "Respuestas" de la Google Sheet a la que
@@ -27,11 +31,14 @@ var GUESTS_HEADERS = [
   'h (id)', 'Nombres (saludo)', 'Cupos', 'Teléfono (51…)', 'Link', 'Estado', 'Confirmados', 'Alerta', 'WhatsApp'
 ];
 var GUEST_ROWS = 80;
+// true: acepta respuestas del link genérico (sin ?h=). false: solo hogares de la pestaña Invitados.
+var ALLOW_GENERIC = true;
 
 // Menú en la hoja: Invitación → Preparar hoja
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Invitación')
     .addItem('Preparar hoja', 'prepararHoja')
+    .addItem('Generar ids faltantes', 'generarIds')
     .addToUi();
 }
 
@@ -48,7 +55,7 @@ function prepararHoja() {
   g.setFrozenRows(1);
   g.getRange('A:A').setNumberFormat('@');   // ids como texto: 007 no se vuelve 7
   g.getRange('D:D').setNumberFormat('@');
-  if (!g.getRange('A2').getValue()) g.getRange('A2:D2').setValues([['007', 'Yembert y Laura', 2, '']]);
+  if (!g.getRange('B2').getValue()) g.getRange('A2:D2').setValues([[randomId_(), 'Juan y María (prueba)', 2, '']]);
 
   var formulas = [];
   for (var r = 2; r <= GUEST_ROWS + 1; r++) {
@@ -81,6 +88,48 @@ function prepararHoja() {
   ss.setActiveSheet(g);
 }
 
+/**
+ * Pone un id aleatorio (ej. k7p2qx) a cada hogar con nombre y sin id.
+ * Ids difíciles de adivinar: nadie puede cambiar la respuesta de otro hogar probando 001, 002…
+ */
+function generarIds() {
+  var g = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(GUESTS_SHEET);
+  if (!g || g.getLastRow() < 2) return;
+  var range = g.getRange(2, 1, g.getLastRow() - 1, 2);
+  var vals = range.getValues();
+  var used = {};
+  vals.forEach(function (v) { if (v[0]) used[String(v[0])] = true; });
+  for (var i = 0; i < vals.length; i++) {
+    if (vals[i][1] && !vals[i][0]) {
+      var id;
+      do { id = randomId_(); } while (used[id]);
+      used[id] = true;
+      g.getRange(i + 2, 1).setValue(id);
+    }
+  }
+}
+
+function randomId_() {
+  var abc = 'abcdefghjkmnpqrstuvwxyz23456789';   // sin 0/o, 1/l/i para que no se confundan
+  var id = '';
+  for (var i = 0; i < 6; i++) id += abc.charAt(Math.floor(Math.random() * abc.length));
+  return id;
+}
+
+// Cupos del hogar según la pestaña Invitados; -1 si el id no está en la lista.
+function guestSeats_(h) {
+  var g = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(GUESTS_SHEET);
+  if (!g || g.getLastRow() < 2) return -1;
+  var vals = g.getRange(2, 1, g.getLastRow() - 1, 3).getValues();
+  for (var i = 0; i < vals.length; i++) {
+    if (String(vals[i][0]).trim() === h) {
+      var c = parseInt(vals[i][2], 10);
+      return c >= 1 && c <= MAX_SEATS ? c : MAX_SEATS;
+    }
+  }
+  return -1;
+}
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   try {
@@ -104,12 +153,21 @@ function doPost(e) {
     }
     if (respuesta === 'si' && !asistentes.length) return json_({ ok: false, error: 'sin asistentes' });
 
-    var cupos = parseInt(data.cupos, 10);
-    if (!(cupos >= 1 && cupos <= MAX_SEATS)) cupos = '';
+    // Los cupos salen de la hoja, no del link (el link se puede editar a mano).
+    var cupos = '';
+    if (h) {
+      cupos = guestSeats_(h);
+      if (cupos < 0) return json_({ ok: false, error: 'hogar desconocido' });
+      if (asistentes.length > cupos) return json_({ ok: false, error: 'excede cupos' });
+    } else if (!ALLOW_GENERIC) {
+      return json_({ ok: false, error: 'link sin hogar' });
+    } else if (asistentes.length > MAX_SEATS) {
+      return json_({ ok: false, error: 'excede cupos' });
+    }
 
     var row = [
       new Date(),
-      h ? "'" + h : '',              // apóstrofo: conserva ceros a la izquierda (007)
+      h ? "'" + h : '',              // apóstrofo: el id queda como texto (no 007 → 7)
       text_(data.hogar, 80),
       respuesta,
       asistentes.length,

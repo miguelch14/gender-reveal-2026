@@ -39,19 +39,29 @@ En la pestaña **Invitados**, una fila por hogar:
 
 | h (id) | Nombres (saludo) | Cupos | Teléfono (51…) |
 |---|---|---|---|
-| 007 | Yembert y Laura | 2 | 51987654321 |
+| *(vacío)* | Juan y María | 2 | 51987654321 |
 
 Las columnas **Link**, **Estado**, **Confirmados**, **Alerta** y **WhatsApp** se llenan solas
 (hasta 80 hogares). "Enviar" abre WhatsApp con el mensaje y el link listos.
 
-- `h` debe ser único por hogar (001, 002…). Es lo que une la invitación con su respuesta.
-- `Nombres` es el saludo ("Hola, Yembert y Laura") y prellena los nombres de pila del formulario.
+- Deja `h` vacío y usa el menú **Invitación → Generar ids faltantes**: pone un id aleatorio
+  (ej. `k7p2qx`) a cada hogar. No uses 001, 002…: serían fáciles de adivinar y alguien podría
+  cambiar la respuesta de otro hogar. Una vez enviado un link, no cambies su id.
+- `Nombres` es el saludo ("Hola, Juan y María") y prellena los nombres de pila del formulario.
+- Los **cupos se validan en el servidor** con lo que dice esta hoja; editar `c=` en el link no sirve de nada.
 
 ### 5. Probar antes de enviar a todos
-1. Abre tu propio link (fila 007) desde WhatsApp en el celular.
+1. Abre el link de la fila de prueba ("Juan y María (prueba)") desde WhatsApp en el celular.
 2. Confirma → debe aparecer una fila en **Respuestas** y el Estado en Invitados pasa a ✅.
 3. Vuelve a responder "No podremos asistir" → la misma fila se actualiza (no se duplica).
-4. Borra la fila de prueba en Respuestas.
+4. Borra la fila de prueba en Respuestas y en Invitados.
+
+## Seguridad
+- No hay claves ni secretos en el repo. **No publiques teléfonos ni nombres reales aquí**:
+  la lista de invitados vive solo en tu Google Sheet (privada; no la compartas "con cualquiera que tenga el enlace").
+- La URL `/exec` es pública por diseño (la página la necesita). Solo acepta respuestas:
+  no devuelve datos de la hoja. Valida el id del hogar y los cupos contra la pestaña Invitados.
+- El script usa `@OnlyCurrentDoc`: solo tiene permiso sobre esta hoja.
 
 ## Notas
 - Si cambias `Code.gs` después: **Implementar → Administrar implementaciones → ✏️ → Versión: Nueva versión → Implementar**.
