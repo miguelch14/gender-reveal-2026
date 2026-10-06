@@ -1,69 +1,50 @@
 # Gender reveal · Miguel & Anaís
 
-Invitación web personalizada por hogar. Las confirmaciones llegan solas a una Google Sheet.
+Invitación web genérica: todos reciben el mismo link y cada persona se registra a sí misma
+y a sus acompañantes. Las confirmaciones llegan solas a una Google Sheet.
 
 - Página: `index.html`, publicada en GitHub Pages → https://miguelch14.github.io/gender-reveal-2026/
 - Backend: `apps-script/Code.gs` (Google Apps Script dentro de la hoja)
 
-## Paso a paso
+## Cómo funciona
+1. El invitado abre el link, elige "Sí, asistiremos" o "No podremos asistir".
+2. Si asiste: cuántas personas (máx. 8 por registro, `CONFIG.maxPeople`), nombre y apellido de
+   cada una, celular opcional, restricción alimentaria y comentario.
+3. La respuesta se guarda en la pestaña **Respuestas**. El celular del invitado recuerda su
+   registro: si vuelve a abrir el link, ve "Cambiar respuesta" y su fila se actualiza (no se duplica).
+4. La pestaña **Resumen** muestra registros, personas confirmadas, aforo y lugares disponibles.
 
-### 1. Publicar la página (GitHub)
-1. Repo → **Settings → General → Danger Zone → Change visibility → Public** (Pages gratis exige repo público).
-2. **Settings → Pages → Source: GitHub Actions**.
-3. **Actions → "Deploy a GitHub Pages" → Run workflow**. En ~1 min la página está en la URL de arriba.
+## Puesta en marcha
+### 1. Página (GitHub)
+1. Repo público → **Settings → Pages → Source: GitHub Actions**.
+2. Cada push a `main` publica la página (pestaña **Actions**).
 
-### 2. Crear la hoja y el backend (Google)
-1. En https://sheets.new crea una hoja; llámala "Gender reveal – confirmaciones".
-2. **Archivo → Configuración → Zona horaria: (GMT-05:00) Lima** → Guardar.
-3. **Extensiones → Apps Script**. Borra lo que haya, pega todo `apps-script/Code.gs` y guarda (💾).
-4. Arriba, elige la función **prepararHoja** → **Ejecutar**. Google pedirá permisos:
-   *Revisar permisos → tu cuenta → Configuración avanzada → Ir a … (no seguro) → Permitir*
-   (es "no seguro" solo porque el script es tuyo y no está verificado por Google).
-5. Vuelve a la hoja: aparecen las pestañas **Invitados**, **Respuestas** y **Resumen**.
-6. En Apps Script: **Implementar → Nueva implementación → ⚙️ Aplicación web**
-   - Ejecutar como: **Yo**
-   - Quién tiene acceso: **Cualquier usuario**
-   - **Implementar** → copia la **URL de la aplicación web** (termina en `/exec`).
-7. Prueba: abre esa URL en el navegador; debe decir `{"ok":true,"service":"gender-reveal-rsvp"}`.
+### 2. Hoja y backend (Google)
+1. Crea una hoja (https://sheets.new). **Archivo → Configuración → Zona horaria: Lima**.
+2. **Extensiones → Apps Script**: pega todo `apps-script/Code.gs` y guarda.
+3. Ejecuta **prepararHoja** (acepta los permisos: *Configuración avanzada → Ir a … → Permitir*).
+4. **Implementar → Nueva implementación → Aplicación web**: Ejecutar como **Yo**,
+   acceso **Cualquier usuario**. Copia la URL `/exec` en `CONFIG.rsvpEndpoint` de `index.html`.
+5. Prueba: abrir la URL `/exec` en el navegador muestra `{"ok":true,...}`.
 
-### 3. Conectar la página con la hoja
-En `index.html`, en `CONFIG`:
-- `rsvpEndpoint`: la URL `/exec`.
-- `rsvpDeadline`: ej. `'sábado 24 de octubre'`.
+**Si cambias `Code.gs` después:** Implementar → Administrar implementaciones → ✏️ →
+Versión: **Nueva versión** → Implementar. Así la URL `/exec` no cambia.
 
-Sube el cambio a `main`; GitHub Pages se vuelve a publicar solo.
-
-### 4. Cargar invitados y enviar links
-En la pestaña **Invitados**, una fila por hogar:
-
-| h (id) | Nombres (saludo) | Cupos | Teléfono (51…) |
-|---|---|---|---|
-| *(vacío)* | Juan y María | 2 | 51987654321 |
-
-Las columnas **Link**, **Estado**, **Confirmados**, **Alerta** y **WhatsApp** se llenan solas
-(hasta 80 hogares). "Enviar" abre WhatsApp con el mensaje y el link listos.
-
-- Deja `h` vacío: al escribir el nombre se genera solo un id aleatorio (ej. `k7p2qx`).
-  Si pegas varias filas de golpe, usa el menú **Invitación → Generar ids faltantes**. No uses 001, 002…: serían fáciles de adivinar y alguien podría
-  cambiar la respuesta de otro hogar. Una vez enviado un link, no cambies su id.
-- `Nombres` es el saludo ("Hola, Juan y María") y prellena los nombres de pila del formulario.
-- Los **cupos se validan en el servidor** con lo que dice esta hoja; editar `c=` en el link no sirve de nada.
-
-### 5. Probar antes de enviar a todos
-1. Abre el link de la fila de prueba ("Juan y María (prueba)") desde WhatsApp en el celular.
-2. Confirma → debe aparecer una fila en **Respuestas** y el Estado en Invitados pasa a ✅.
-3. Vuelve a responder "No podremos asistir" → la misma fila se actualiza (no se duplica).
-4. Borra la fila de prueba en Respuestas y en Invitados.
+## Probar
+1. Abre el link desde WhatsApp en el celular, confirma con 2 personas → aparece una fila en Respuestas.
+2. Vuelve a abrir el link → el botón dice "Cambiar respuesta"; quita una persona y envía →
+   la misma fila se actualiza ("Veces actualizado" = 1).
+3. Borra las filas de prueba de Respuestas.
 
 ## Seguridad
-- No hay claves ni secretos en el repo. **No publiques teléfonos ni nombres reales aquí**:
-  la lista de invitados vive solo en tu Google Sheet (privada; no la compartas "con cualquiera que tenga el enlace").
-- La URL `/exec` es pública por diseño (la página la necesita). Solo acepta respuestas:
-  no devuelve datos de la hoja. Valida el id del hogar y los cupos contra la pestaña Invitados.
+- No hay claves ni secretos en el repo. No publiques teléfonos ni nombres de invitados aquí:
+  esos datos viven solo en tu Google Sheet (privada; no la compartas "con cualquiera que tenga el enlace").
+- La URL `/exec` es pública por diseño. Solo acepta respuestas (no devuelve datos de la hoja),
+  limita a 8 personas por registro, valida el id de registro y descarta bots con un campo trampa.
+- Como el link es genérico, quien lo tenga puede registrarse: revisa Respuestas de vez en cuando.
 - El script usa `@OnlyCurrentDoc`: solo tiene permiso sobre esta hoja.
+- Las fotos de `assets/img/` están optimizadas y sin metadatos (GPS). Los originales (`fotos/`) no se suben.
 
 ## Notas
-- Si cambias `Code.gs` después: **Implementar → Administrar implementaciones → ✏️ → Versión: Nueva versión → Implementar**.
-  Así la URL `/exec` no cambia. (Para `prepararHoja` no hace falta: basta con ejecutarla.)
-- Los links genéricos (sin `?h=`) también guardan respuestas, pero no se cruzan con Invitados.
+- Si cambias fecha u hora, actualiza también `assets/gender-reveal.ics`.
 - El sitio tiene `noindex`: no aparece en Google, pero cualquiera con el link puede abrirlo.
