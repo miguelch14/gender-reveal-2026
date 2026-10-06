@@ -29,7 +29,6 @@ Invitación web personalizada por hogar. Las confirmaciones llegan solas a una G
 ### 3. Conectar la página con la hoja
 En `index.html`, en `CONFIG`:
 - `rsvpEndpoint`: la URL `/exec`.
-- `rsvpPhone`: tu WhatsApp, ej. `51999999999` (respaldo si falla el envío).
 - `rsvpDeadline`: ej. `'sábado 24 de octubre'`.
 
 Sube el cambio a `main`; GitHub Pages se vuelve a publicar solo.

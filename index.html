@@ -232,7 +232,6 @@ body.modal-open { overflow: hidden; }
 .qty-num { min-width: 48px; text-align: center; font-size: 46px; font-weight: 500; line-height: 1; }
 .hint { margin: 8px 0 0; text-align: center; font-size: 14px; font-weight: 300; color: var(--soft); }
 .btn:disabled { opacity: .6; cursor: default; }
-.wa { margin-bottom: 12px; }
 .err { margin: 0 0 12px; font-size: 14px; color: #A4452C; }
 .done { text-align: center; padding: 8px 0 4px; }
 .done .big2 { font-size: 34px; font-style: italic; font-weight: 500; margin-bottom: 8px; }
@@ -398,11 +397,11 @@ body.modal-open { overflow: hidden; }
       </div>
     </div>
     <div id="rsvp-done-view" class="done" hidden>
-      <div class="big2 serif">¡Gracias!</div>
+      <div class="big2 serif" id="rsvp-done-title">¡Gracias!</div>
       <p class="sub" id="rsvp-done-text"></p>
-      <a class="btn primary wa" id="rsvp-wa" href="#" target="_blank" rel="noopener" hidden>Enviar por WhatsApp</a>
+      <button class="btn primary" id="rsvp-retry" type="button" hidden>Intentar de nuevo</button>
       <textarea class="msgbox" id="rsvp-msg" readonly hidden></textarea>
-      <button class="btn primary" id="rsvp-copy" type="button" hidden>Copiar mensaje</button>
+      <button class="btn" id="rsvp-copy" type="button" hidden>Copiar mensaje</button>
       <button class="btn" id="rsvp-ok" type="button" style="margin-top:12px">Cerrar</button>
     </div>
   </div>
@@ -414,7 +413,6 @@ var CONFIG = {
   venueName: 'Fundo Querencia Alta',
   venueAddress: '',     // ej. 'Av. Principal 123, Pachacámac'
   mapsUrl: 'https://maps.app.goo.gl/JbFUyARZbP4ak7o27?g_st=ic',
-  rsvpPhone: '',        // opcional; vacío = el invitado elige el chat (no publiques tu número en el repo)
   rsvpEndpoint: 'https://script.google.com/macros/s/AKfycbxfxP6IaK2zLkb--MvWOuQc7dqt8HmG6DDUm8omEfYuKeiD1VqkkHRjiyScGT7re5Jq/exec',
   rsvpDeadline: '',     // TODO: ej. 'sábado 24 de octubre' → "Confirma antes del sábado 24 de octubre"
   defaultSeats: 2       // cupos cuando el link no trae ?c=
@@ -683,7 +681,8 @@ var CONFIG = {
     var text = document.getElementById('rsvp-done-text');
     var box = document.getElementById('rsvp-msg');
     var copyBtn = document.getElementById('rsvp-copy');
-    var wa = document.getElementById('rsvp-wa');
+    var retry = document.getElementById('rsvp-retry');
+    var title = document.getElementById('rsvp-done-title');
     var msg = buildMessage(data);
     box.value = msg;
     formView.hidden = true;
@@ -692,18 +691,18 @@ var CONFIG = {
       text.textContent = data.respuesta === 'si'
         ? 'Recibimos tu confirmación. ¡Te esperamos el sábado 7 de noviembre!'
         : 'Gracias por avisarnos. ¡Te vamos a extrañar!';
-      wa.hidden = true;
+      title.textContent = '¡Gracias!';
+      retry.hidden = true;
       box.hidden = true;
       copyBtn.hidden = true;
       document.getElementById('rsvp').textContent = 'Cambiar mi respuesta';
       return;
     }
-    // Sin número, wa.me abre WhatsApp con el mensaje listo y el invitado elige el chat.
-    wa.href = 'https://wa.me/' + (CONFIG.rsvpPhone || '') + '?text=' + encodeURIComponent(msg);
-    wa.hidden = false;
-    text.textContent = CONFIG.rsvpPhone
-      ? 'No pudimos registrar tu respuesta automáticamente. Envíanosla por WhatsApp con un solo toque:'
-      : 'No pudimos registrar tu respuesta automáticamente. Toca el botón, elige el chat de Miguel o Anaís y envía el mensaje:';
+    // Sin enlace a WhatsApp: desde su navegador interno, al volver se recarga la invitación desde cero.
+    title.textContent = 'Casi listo';
+    text.textContent = 'No pudimos enviar tu respuesta. Revisa tu conexión e inténtalo de nuevo; tus datos siguen guardados. ' +
+      'Si sigue sin funcionar, copia este mensaje y envíaselo a Miguel o Anaís.';
+    retry.hidden = false;
     box.hidden = false;
     copyBtn.hidden = false;
     copyBtn.textContent = 'Copiar mensaje';
@@ -770,6 +769,11 @@ var CONFIG = {
       setAnswer(answer);
       showDone(data, ok);
     });
+  });
+  document.getElementById('rsvp-retry').addEventListener('click', function () {
+    doneView.hidden = true;
+    formView.hidden = false;
+    sendBtn.focus();
   });
   document.getElementById('rsvp-copy').addEventListener('click', function () {
     var btn = this;
