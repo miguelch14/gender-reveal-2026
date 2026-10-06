@@ -188,6 +188,13 @@ body.locked { overflow: hidden; height: 100%; }
 }
 .btn.primary { background: var(--ink); color: var(--cream); }
 .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.cal-menu {
+  display: flex; flex-direction: column; gap: 10px; padding: 14px; margin-top: -4px;
+  border: 1px solid var(--accent); border-radius: 22px; background: var(--paper);
+  animation: rise .35s cubic-bezier(.2,.7,.2,1) both;
+}
+.cal-menu .btn { min-height: 50px; letter-spacing: .08em; text-transform: none; font-size: 16px; font-weight: 400; }
+.cal-menu small { display: block; text-align: center; font-size: 13px; color: var(--soft); }
 .note { margin: 0; text-align: center; font-size: 15px; font-weight: 300; line-height: 1.6; color: var(--soft); }
 .foot { text-align: center; font-size: 28px; font-style: italic; font-weight: 500; }
 .foot small { display: block; margin-bottom: 6px; font-family: 'Jost', sans-serif; font-style: normal; font-size: 12px; letter-spacing: .3em; font-weight: 500; color: var(--soft); }
@@ -404,7 +411,13 @@ body.modal-open { overflow: hidden; }
       <button class="btn primary" id="rsvp" type="button">Confirmar asistencia</button>
       <p class="note" id="deadline" hidden></p>
       <a class="btn" id="map" href="#" target="_blank" rel="noopener">Cómo llegar</a>
-      <a class="btn" id="cal" href="#" target="_blank" rel="noopener">Agregar al calendario</a>
+      <button class="btn" id="cal" type="button" aria-expanded="false" aria-controls="cal-menu">Agregar al calendario</button>
+      <div class="cal-menu" id="cal-menu" hidden>
+        <small>Elige tu calendario</small>
+        <a class="btn" id="cal-google" href="#" target="_blank" rel="noopener">Google Calendar</a>
+        <a class="btn" id="cal-apple" href="assets/gender-reveal.ics">Calendario de iPhone o Mac</a>
+        <a class="btn" id="cal-ics" href="assets/gender-reveal.ics" download="gender-reveal.ics">Otro (Outlook, descargar .ics)</a>
+      </div>
     </section>
 
     <div class="foot serif rise"><small>TE ESPERAMOS</small>Miguel &amp; Anaís</div>
@@ -880,13 +893,23 @@ var CONFIG = {
       btn.textContent = ok ? '¡Copiado!' : 'Selecciona y copia el texto';
     });
   });
-  // Calendario (1:00 p. m. hora de Lima = 18:00 UTC, 4 horas)
-  document.getElementById('cal').href =
-    'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+  // Calendario (1:00 p. m. hora de Lima = 18:00 UTC, 4 horas): tres opciones al tocar el botón.
+  // Si cambias fecha o lugar, actualiza también assets/gender-reveal.ics.
+  document.getElementById('cal-google').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
     '&text=' + encodeURIComponent('Gender Reveal de Miguel y Anaís') +
     '&dates=20261107T180000Z/20261107T220000Z' +
     '&location=' + encodeURIComponent((CONFIG.venueName ? CONFIG.venueName + ', ' : '') + 'Pachacámac, Lima') +
-    '&details=' + encodeURIComponent('Ven a descubrir con nosotros si nuestro bebé es niño o niña.');
+    '&details=' + encodeURIComponent('Ven a descubrir con nosotros si nuestro bebé es niño o niña.\n\nCómo llegar: ' + CONFIG.mapsUrl);
+  var calBtn = document.getElementById('cal');
+  var calMenu = document.getElementById('cal-menu');
+  // En iPhone/Mac la opción de Apple va primero (el .ics abre directo "Agregar al calendario").
+  if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent || '')) {
+    calMenu.insertBefore(document.getElementById('cal-apple'), document.getElementById('cal-google'));
+  }
+  calBtn.addEventListener('click', function () {
+    calMenu.hidden = !calMenu.hidden;
+    calBtn.setAttribute('aria-expanded', calMenu.hidden ? 'false' : 'true');
+  });
 
   // Cuenta regresiva
   var target = new Date('2026-11-07T13:00:00-05:00').getTime();

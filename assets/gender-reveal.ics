@@ -1,0 +1,29 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Miguel y Anais//Gender Reveal//ES
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:gender-reveal-20261107@miguelch14.github.io
+DTSTAMP:20261005T000000Z
+DTSTART:20261107T180000Z
+DTEND:20261107T220000Z
+SUMMARY:Gender Reveal de Miguel y Anaís
+LOCATION:Fundo Querencia Alta\, Pachacámac\, Lima
+DESCRIPTION:Ven a descubrir con nosotros si nuestro bebé es niño o niña.
+  Almuerzo incluido.\n\nDress code: libre\, en tonos blanco\, beige y marr
+ ón.\n\nCómo llegar: https://maps.app.goo.gl/JbFUyARZbP4ak7o27\n\nInvitac
+ ión: https://miguelch14.github.io/gender-reveal-2026/
+URL:https://miguelch14.github.io/gender-reveal-2026/
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-P1D
+DESCRIPTION:Mañana es el gender reveal de Miguel y Anaís
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-PT3H
+DESCRIPTION:Hoy es el gender reveal de Miguel y Anaís
+END:VALARM
+END:VEVENT
+END:VCALENDAR
