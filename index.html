@@ -268,8 +268,11 @@ body.modal-open { overflow: hidden; }
 .btn:disabled { opacity: .6; cursor: default; }
 .err { margin: 0 0 12px; font-size: 14px; color: #A4452C; }
 .done { text-align: center; padding: 8px 0 4px; }
-.done .big2 { font-size: 34px; font-style: italic; font-weight: 500; margin-bottom: 8px; }
-.msgbox { width: 100%; min-height: 150px; margin: 12px 0; padding: 12px; border: 1px solid var(--accent); border-radius: 12px; font-family: inherit; font-size: 14px; line-height: 1.5; color: var(--ink); background: var(--cream); resize: none; }
+/* Separación uniforme entre título, texto y botones (los ocultos no ocupan espacio). */
+.done:not([hidden]) { display: flex; flex-direction: column; gap: 14px; }
+.done .big2 { font-size: 34px; font-style: italic; font-weight: 500; }
+.done p.sub { margin: 0; }
+.msgbox { width: 100%; min-height: 150px; margin: 0; padding: 12px; border: 1px solid var(--accent); border-radius: 12px; font-family: inherit; font-size: 14px; line-height: 1.5; color: var(--ink); background: var(--cream); resize: none; }
 @media (prefers-reduced-motion: reduce) {
   .stage, .stage *, .invite, .invite * { animation: none !important; transition-duration: .01s !important; transition-delay: 0s !important; }
 }
@@ -479,7 +482,7 @@ body.modal-open { overflow: hidden; }
       <button class="btn primary" id="rsvp-retry" type="button" hidden>Intentar de nuevo</button>
       <textarea class="msgbox" id="rsvp-msg" readonly hidden></textarea>
       <button class="btn" id="rsvp-copy" type="button" hidden>Copiar mensaje</button>
-      <button class="btn" id="rsvp-ok" type="button" style="margin-top:12px">Cerrar</button>
+      <button class="btn" id="rsvp-ok" type="button">Cerrar</button>
     </div>
   </div>
 </div>
