@@ -613,7 +613,7 @@ var CONFIG = {
   // Música: empieza al abrir el sobre con entrada suave, volumen bajo y botón para silenciar.
   // En iOS el volumen de <audio> no se puede cambiar por código: se usa Web Audio (GainNode) si existe.
   var MUSIC_KEY = 'gender-reveal-music-off';
-  var MUSIC_VOL = 0.45;
+  var MUSIC_VOL = 0.3;   // el archivo ya viene a la mitad de volumen (≈ -16 dB en total)
   var music = document.getElementById('bg-music');
   var musicBtn = document.getElementById('music-btn');
   var musicOff = false, gain = null, actx = null, fadeTimer = null;
@@ -667,16 +667,8 @@ var CONFIG = {
     if (musicOff) { setVol(0, 0.4); setTimeout(function () { if (musicOff) music.pause(); }, 450); }
     else playMusic();
   });
-  // Bucle con fundido: baja los últimos 2,5 s y vuelve a entrar suave desde el inicio.
-  var fadingOut = false;
-  music.addEventListener('timeupdate', function () {
-    if (!musicOff && !fadingOut && music.duration && music.duration - music.currentTime < 2.5) {
-      fadingOut = true;
-      setVol(0, 2.4);
-    }
-  });
+  // Bucle: la canción ya termina bajando sola y el archivo empieza con fundido de entrada.
   music.addEventListener('ended', function () {
-    fadingOut = false;
     music.currentTime = 0;
     if (!musicOff) playMusic();
   });
