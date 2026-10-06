@@ -5,159 +5,53 @@
 /**
  * Backend de confirmaciones del gender reveal de Miguel & Anaís.
  *
- * Guarda cada respuesta en la hoja "Respuestas" de la Google Sheet a la que
- * está vinculado este script (Extensiones → Apps Script).
- * Si un hogar (h) vuelve a responder, se actualiza su fila en lugar de duplicarla.
+ * Invitación genérica: cualquiera con el link se registra a sí mismo y a sus acompañantes.
+ * Cada registro trae un id aleatorio generado en el celular del invitado; si vuelve a
+ * responder desde el mismo celular, se actualiza su fila en lugar de duplicarla.
  *
- * Publicación: Implementar → Nueva implementación → Aplicación web
- *   - Ejecutar como: Yo
- *   - Quién tiene acceso: Cualquier usuario
- * Copia la URL que termina en /exec en CONFIG.rsvpEndpoint del index.html.
+ * Publicación: Implementar → Administrar implementaciones → ✏️ → Versión: Nueva versión
+ *   (o la primera vez: Nueva implementación → Aplicación web, Ejecutar como: Yo,
+ *    Quién tiene acceso: Cualquier usuario). La URL /exec va en CONFIG.rsvpEndpoint.
  *
- * Antes, ejecuta una vez prepararHoja() para crear las pestañas Invitados,
- * Respuestas y Resumen (ver README.md).
+ * Antes, ejecuta una vez prepararHoja() para crear las pestañas Respuestas y Resumen.
  */
 
 var SHEET_NAME = 'Respuestas';
 var HEADERS = [
-  'Timestamp', 'Hogar (h)', 'Nombres del hogar', 'Respuesta', 'Cantidad',
-  'Asistentes', 'Restricciones', 'Comentario', 'Cupos', 'Veces actualizado'
+  'Timestamp', 'ID registro', 'Contacto', 'Respuesta', 'Cantidad',
+  'Asistentes', 'Celular', 'Restricciones', 'Comentario', 'Veces actualizado'
 ];
-var MAX_SEATS = 10;
-
-var SITE_URL = 'https://miguelch14.github.io/gender-reveal-2026/';
-var GUESTS_SHEET = 'Invitados';
-var GUESTS_HEADERS = [
-  'h (id)', 'Nombres (saludo)', 'Cupos', 'Teléfono (51…)', 'Link', 'Estado', 'Confirmados', 'Alerta', 'WhatsApp'
-];
-var GUEST_ROWS = 80;
-// true: acepta respuestas del link genérico (sin ?h=). false: solo hogares de la pestaña Invitados.
-var ALLOW_GENERIC = true;
+var MAX_PEOPLE = 8;     // máximo por registro (igual que CONFIG.maxPeople en index.html)
+var CAPACITY = 60;      // aforo total, para el Resumen
 
 // Menú en la hoja: Invitación → Preparar hoja
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Invitación')
     .addItem('Preparar hoja', 'prepararHoja')
-    .addItem('Generar ids faltantes', 'generarIds')
     .addToUi();
 }
 
-/**
- * Crea las pestañas Respuestas, Invitados y Resumen con sus fórmulas.
- * Se puede ejecutar más de una vez: no borra los invitados que ya escribiste.
- */
+/** Crea (o completa) las pestañas Respuestas y Resumen. Se puede ejecutar más de una vez. */
 function prepararHoja() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  getSheet_();
-
-  var g = ss.getSheetByName(GUESTS_SHEET) || ss.insertSheet(GUESTS_SHEET, 0);
-  g.getRange(1, 1, 1, GUESTS_HEADERS.length).setValues([GUESTS_HEADERS]).setFontWeight('bold');
-  g.setFrozenRows(1);
-  g.getRange('A:A').setNumberFormat('@');   // ids como texto: 007 no se vuelve 7
-  g.getRange('D:D').setNumberFormat('@');
-  if (!g.getRange('B2').getValue()) g.getRange('A2:D2').setValues([[randomId_(), 'Juan y María (prueba)', 2, '']]);
-
-  var formulas = [];
-  for (var r = 2; r <= GUEST_ROWS + 1; r++) {
-    var resp = 'VLOOKUP($A' + r + ',Respuestas!$B:$E,';
-    formulas.push([
-      '=IF($A' + r + '="","","' + SITE_URL + '?h="&ENCODEURL($A' + r + ')&"&n="&ENCODEURL($B' + r + ')&"&c="&$C' + r + ')',
-      '=IF($A' + r + '="","",IFERROR(IF(' + resp + '3,FALSE)="si","✅ Asiste","❌ No asiste"),"⏳ Pendiente"))',
-      '=IF($A' + r + '="","",IFERROR(IF(' + resp + '3,FALSE)="si",' + resp + '4,FALSE),0),""))',
-      '=IF(AND(ISNUMBER($G' + r + '),$G' + r + '>$C' + r + '),"⚠️ Más que los cupos","")',
-      '=IF(OR($A' + r + '="",$D' + r + '=""),"",HYPERLINK("https://wa.me/"&$D' + r +
-        '&"?text="&ENCODEURL("¡Hola, "&$B' + r + '&"! Con mucho cariño te enviamos la invitación a nuestro gender reveal: "&$E' + r + '),"Enviar"))'
-    ]);
-  }
-  g.getRange(2, 5, GUEST_ROWS, 5).setFormulas(formulas);
-  g.setColumnWidth(2, 200);
-  g.setColumnWidth(5, 320);
-  g.setColumnWidth(6, 120);
+  var r = getSheet_();
+  r.setColumnWidth(6, 260);
+  r.getRange('F:F').setWrap(true);
 
   var s = ss.getSheetByName('Resumen') || ss.insertSheet('Resumen');
-  s.getRange('A1:B6').setValues([
-    ['Hogares invitados', '=COUNTA(Invitados!A2:A)'],
-    ['Cupos entregados', '=SUM(Invitados!C2:C)'],
-    ['Hogares que asisten', '=COUNTIF(Invitados!F2:F,"✅ Asiste")'],
-    ['Personas confirmadas', '=SUM(Invitados!G2:G)'],
-    ['Hogares que no asisten', '=COUNTIF(Invitados!F2:F,"❌ No asiste")'],
-    ['Hogares pendientes', '=COUNTIF(Invitados!F2:F,"⏳ Pendiente")']
+  s.clear();
+  s.getRange('A1:B7').setValues([
+    ['Registros recibidos', '=COUNTA(Respuestas!B2:B)'],
+    ['Registros que asisten', '=COUNTIF(Respuestas!D2:D,"si")'],
+    ['Personas confirmadas', '=SUMIF(Respuestas!D2:D,"si",Respuestas!E2:E)'],
+    ['Registros que no asisten', '=COUNTIF(Respuestas!D2:D,"no")'],
+    ['Aforo', CAPACITY],
+    ['Lugares disponibles', '=B5-B3'],
+    ['Alerta', '=IF(B3>B5,"⚠️ Se superó el aforo","")']
   ]);
-  s.getRange('A1:A6').setFontWeight('bold');
-  s.setColumnWidth(1, 200);
-  ss.setActiveSheet(g);
-}
-
-/**
- * Pone un id aleatorio (ej. k7p2qx) a cada hogar con nombre y sin id.
- * Ids difíciles de adivinar: nadie puede cambiar la respuesta de otro hogar probando 001, 002…
- */
-function generarIds() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var g = ss.getSheetByName(GUESTS_SHEET);
-  if (!g) {
-    ss.toast('No existe la pestaña "Invitados". Usa primero Invitación → Preparar hoja.', 'Invitación', 8);
-    return;
-  }
-  var n = fillIds_(g, 2, Math.max(g.getLastRow() - 1, 0));
-  ss.toast(n ? 'Se generaron ' + n + (n === 1 ? ' id.' : ' ids.')
-             : 'No hay hogares sin id. Escribe el nombre en la columna B, debajo del encabezado.', 'Invitación', 8);
-}
-
-// Al escribir un nombre en Invitados (columna B), el id se genera solo.
-function onEdit(e) {
-  if (!e || !e.range) return;
-  var sh = e.range.getSheet();
-  if (sh.getName() !== GUESTS_SHEET || e.range.getColumn() > 2 || e.range.getLastColumn() < 2) return;
-  var first = Math.max(e.range.getRow(), 2);
-  var count = e.range.getLastRow() - first + 1;
-  if (count > 0) fillIds_(sh, first, count);
-}
-
-// Rellena ids vacíos en filas con nombre; devuelve cuántos generó.
-function fillIds_(g, firstRow, count) {
-  if (count < 1) return 0;
-  var last = g.getLastRow();
-  var used = {};
-  if (last >= 2) {
-    g.getRange(2, 1, last - 1, 1).getValues().forEach(function (v) {
-      var id = String(v[0]).trim();
-      if (id) used[id] = true;
-    });
-  }
-  var vals = g.getRange(firstRow, 1, count, 2).getValues();
-  var made = 0;
-  for (var i = 0; i < vals.length; i++) {
-    if (String(vals[i][1]).trim() && !String(vals[i][0]).trim()) {
-      var id;
-      do { id = randomId_(); } while (used[id]);
-      used[id] = true;
-      g.getRange(firstRow + i, 1).setValue(id);
-      made++;
-    }
-  }
-  return made;
-}
-
-function randomId_() {
-  var abc = 'abcdefghjkmnpqrstuvwxyz23456789';   // sin 0/o, 1/l/i para que no se confundan
-  var id = '';
-  for (var i = 0; i < 6; i++) id += abc.charAt(Math.floor(Math.random() * abc.length));
-  return id;
-}
-
-// Cupos del hogar según la pestaña Invitados; -1 si el id no está en la lista.
-function guestSeats_(h) {
-  var g = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(GUESTS_SHEET);
-  if (!g || g.getLastRow() < 2) return -1;
-  var vals = g.getRange(2, 1, g.getLastRow() - 1, 3).getValues();
-  for (var i = 0; i < vals.length; i++) {
-    if (String(vals[i][0]).trim() === h) {
-      var c = parseInt(vals[i][2], 10);
-      return c >= 1 && c <= MAX_SEATS ? c : MAX_SEATS;
-    }
-  }
-  return -1;
+  s.getRange('A1:A7').setFontWeight('bold');
+  s.setColumnWidth(1, 220);
+  ss.setActiveSheet(s);
 }
 
 function doPost(e) {
@@ -170,46 +64,42 @@ function doPost(e) {
   try {
     var data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
 
-    var h = String(data.h || '').trim();
-    if (!/^[A-Za-z0-9_-]{1,12}$/.test(h)) h = '';
+    // Campo trampa: las personas no lo ven; si viene lleno es un bot. Respondemos ok sin guardar.
+    if (data.website) return json_({ ok: true });
+
+    var id = String(data.r || '').trim();
+    if (!/^[a-z0-9]{8,16}$/.test(id)) return json_({ ok: false, error: 'id inválido' });
+
     var respuesta = data.respuesta === 'si' ? 'si' : data.respuesta === 'no' ? 'no' : '';
     if (!respuesta) return json_({ ok: false, error: 'respuesta inválida' });
 
     var asistentes = [];
     if (respuesta === 'si' && Array.isArray(data.asistentes)) {
-      asistentes = data.asistentes.slice(0, MAX_SEATS)
+      asistentes = data.asistentes
         .map(function (n) { return text_(n, 80); })
         .filter(function (n) { return n; });
     }
     if (respuesta === 'si' && !asistentes.length) return json_({ ok: false, error: 'sin asistentes' });
+    if (asistentes.length > MAX_PEOPLE) return json_({ ok: false, error: 'demasiadas personas' });
 
-    // Los cupos salen de la hoja, no del link (el link se puede editar a mano).
-    var cupos = '';
-    if (h) {
-      cupos = guestSeats_(h);
-      if (cupos < 0) return json_({ ok: false, error: 'hogar desconocido' });
-      if (asistentes.length > cupos) return json_({ ok: false, error: 'excede cupos' });
-    } else if (!ALLOW_GENERIC) {
-      return json_({ ok: false, error: 'link sin hogar' });
-    } else if (asistentes.length > MAX_SEATS) {
-      return json_({ ok: false, error: 'excede cupos' });
-    }
+    var contacto = text_(data.contacto, 80) || asistentes[0] || '';
+    if (!contacto) return json_({ ok: false, error: 'sin nombre' });
 
     var row = [
       new Date(),
-      h ? "'" + h : '',              // apóstrofo: el id queda como texto (no 007 → 7)
-      text_(data.hogar, 80),
+      id,
+      contacto,
       respuesta,
       asistentes.length,
       asistentes.join('\n'),
+      respuesta === 'si' ? phone_(data.celular) : '',
       respuesta === 'si' ? text_(data.restricciones, 120) : '',
       text_(data.comentario, 300),
-      cupos,
       0
     ];
 
     var sheet = getSheet_();
-    var existing = h ? findRow_(sheet, h) : -1;
+    var existing = findRow_(sheet, id);
     if (existing > 0) {
       row[9] = (Number(sheet.getRange(existing, 10).getValue()) || 0) + 1;
       sheet.getRange(existing, 1, 1, row.length).setValues([row]);
@@ -236,18 +126,25 @@ function getSheet_() {
     sheet.appendRow(HEADERS);
     sheet.setFrozenRows(1);
     sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
+    sheet.getRange('G:G').setNumberFormat('@');   // celulares como texto
   }
   return sheet;
 }
 
-function findRow_(sheet, h) {
+function findRow_(sheet, id) {
   var last = sheet.getLastRow();
   if (last < 2) return -1;
   var ids = sheet.getRange(2, 2, last - 1, 1).getValues();
   for (var i = 0; i < ids.length; i++) {
-    if (String(ids[i][0]) === h) return i + 2;
+    if (String(ids[i][0]) === id) return i + 2;
   }
   return -1;
+}
+
+// Solo dígitos, espacios y + (ej. "987 654 321"); como texto para no perder el formato.
+function phone_(v) {
+  var s = String(v == null ? '' : v).replace(/[^\d+ ]/g, '').replace(/\s+/g, ' ').trim().slice(0, 20);
+  return s ? "'" + s : '';
 }
 
 // Texto limpio y acotado; neutraliza fórmulas (=, +, -, @) para que la hoja no las ejecute.
